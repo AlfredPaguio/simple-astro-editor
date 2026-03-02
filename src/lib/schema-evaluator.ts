@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as esbuild from "esbuild-wasm/esm/browser.js";
 import { z } from "zod";
 

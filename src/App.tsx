@@ -1,12 +1,13 @@
-import { ComponentExample } from "@/components/component-example";
 import { ThemeProvider } from "./components/theme-provider";
-import { ModeToggle } from "./components/mode-toggle";
+import { TooltipProvider } from "./components/ui/tooltip";
+import MainEditor from "@/MainEditor";
 
 export function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-        <ModeToggle />
-      <ComponentExample/>
+      <TooltipProvider>
+        <MainEditor />
+      </TooltipProvider>
     </ThemeProvider>
   );
 }

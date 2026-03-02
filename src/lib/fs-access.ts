@@ -1,0 +1,121 @@
+export interface FileHandle {
+  handle: FileSystemFileHandle;
+  name: string;
+  path: string;
+}
+
+export interface DirectoryHandle {
+  handle: FileSystemDirectoryHandle;
+  name: string;
+  path: string;
+}
+
+export async function pickDirectory(): Promise<DirectoryHandle | null> {
+  try {
+    const handle = await (window as any).showDirectoryPicker({
+      mode: "readwrite",
+    });
+    return {
+      handle,
+      name: handle.name,
+      path: "(root)",
+    };
+  } catch (err) {
+    if ((err as any).name === "AbortError") {
+      return null; // User cancelled
+    }
+    console.error("Directory picker failed:", err);
+    return null;
+  }
+}
+
+export async function pickFile(
+  acceptTypes: Record<string, string[]> = {
+    "text/markdown": [".md", ".mdx"],
+    "text/typescript": [".ts"],
+  },
+): Promise<FileHandle | null> {
+  try {
+    const [handle] = await (window as any).showOpenFilePicker({
+      types: [{ description: "Files", accept: acceptTypes }],
+      multiple: false,
+    });
+    const file = await handle.getFile();
+    return {
+      handle,
+      name: file.name,
+      path: file.name,
+    };
+  } catch (err) {
+    if ((err as any).name === "AbortError") {
+      return null;
+    }
+    console.error("File picker failed:", err);
+    return null;
+  }
+}
+
+export async function readFile(handle: FileSystemFileHandle): Promise<string> {
+  const file = await handle.getFile();
+  return await file.text();
+}
+
+export async function writeFile(
+  handle: FileSystemFileHandle,
+  content: string,
+): Promise<void> {
+  const writable = await handle.createWritable();
+  await writable.write(content);
+  await writable.close();
+}
+
+export async function createBackup(
+  handle: FileSystemFileHandle,
+  content: string,
+): Promise<void> {
+  const fileName = handle.name;
+  const backupName = fileName + ".bak";
+
+  // Create backup in same directory
+  const backupHandle = await (handle as any).getFileSystem().getFileHandle(backupName, {
+    create: true,
+  });
+
+  await writeFile(backupHandle, content);
+}
+
+export async function listMarkdownFiles(
+  dirHandle: FileSystemDirectoryHandle,
+  path: string = "",
+): Promise<FileHandle[]> {
+  const files: FileHandle[] = [];
+
+  for await (const entry of (dirHandle as any).values()) {
+    const entryPath = path ? `${path}/${entry.name}` : entry.name;
+
+    if (entry.kind === "file") {
+      if (entry.name.endsWith(".md") || entry.name.endsWith(".mdx")) {
+        files.push({
+          handle: entry as FileSystemFileHandle,
+          name: entry.name,
+          path: entryPath,
+        });
+      }
+    } else if (entry.kind === "directory") {
+      // Skip common non-content directories
+      if (!["node_modules", ".git", "dist", "build"].includes(entry.name)) {
+        const subFiles = await listMarkdownFiles(
+          entry as FileSystemDirectoryHandle,
+          entryPath,
+        );
+        files.push(...subFiles);
+      }
+    }
+  }
+
+  return files;
+}
+
+export function isFileSystemAccessSupported(): boolean {
+  return "showDirectoryPicker" in window && "showOpenFilePicker" in window;
+}

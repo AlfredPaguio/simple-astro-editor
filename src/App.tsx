@@ -1,9 +1,14 @@
+import { ComponentExample } from "@/components/component-example";
+import { ThemeProvider } from "./components/theme-provider";
+import { ModeToggle } from "./components/mode-toggle";
+
 export function App() {
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="font-medium">Hello World</div>
-    </div>
-  )
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+        <ModeToggle />
+      <ComponentExample/>
+    </ThemeProvider>
+  );
 }
 
-export default App
+export default App;

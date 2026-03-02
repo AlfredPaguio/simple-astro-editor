@@ -194,9 +194,85 @@ function FormField({
     );
   }
 
+  if (type === "object" && schema.properties) {
+    const objectValue = value || {};
+    return (
+      <div className="space-y-4 border p-4 rounded-md">
+        <Label>{label}</Label>
+        <div className="pl-4 border-l-2 space-y-4">
+          {Object.entries(schema.properties).map(
+            ([propKey, propSchema]: [string, any]) => (
+              <FormField
+                key={propKey}
+                name={propKey}
+                schema={propSchema}
+                value={objectValue[propKey]}
+                onChange={(k, v) => {
+                  onChange(name, { ...objectValue, [k]: v });
+                }}
+                status="known"
+              />
+            ),
+          )}
+        </div>
+      </div>
+    );
+  }
+
   if (type === "array") {
-    // Simple array of strings
     const arrayValue = Array.isArray(value) ? value : [];
+    
+    // Array of objects
+    if (schema.items?.type === "object" && schema.items.properties) {
+      const ObjectProperties = schema.items.properties;
+      return (
+        <div className="space-y-4 border p-4 rounded-md bg-zinc-50/50">
+          <Label>{label}</Label>
+          {arrayValue.map((item: any, idx: number) => (
+            <div key={idx} className="space-y-4 pb-4 border-b border-zinc-200">
+              <div className="flex justify-between items-center">
+                <span className="font-semibold text-sm text-zinc-600">Item {idx + 1}</span>
+                <button
+                  onClick={() => {
+                    const newArr = arrayValue.filter((_, i) => i !== idx);
+                    onChange(name, newArr);
+                  }}
+                  className="px-2 py-1 text-xs text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded"
+                >
+                  Remove item
+                </button>
+              </div>
+              <div className="pl-4 border-l-2 border-zinc-300 space-y-4">
+                {Object.entries(ObjectProperties).map(
+                  ([propKey, propSchema]: [string, any]) => (
+                    <FormField
+                      key={propKey}
+                      name={propKey}
+                      schema={propSchema}
+                      value={(item || {})[propKey]}
+                      onChange={(k, v) => {
+                        const newArr = [...arrayValue];
+                        newArr[idx] = { ...(newArr[idx] || {}), [k]: v };
+                        onChange(name, newArr);
+                      }}
+                      status="known"
+                    />
+                  ),
+                )}
+              </div>
+            </div>
+          ))}
+          <button
+            onClick={() => onChange(name, [...arrayValue, {}])}
+            className="text-sm font-medium text-blue-600 hover:text-blue-800"
+          >
+            + Add object
+          </button>
+        </div>
+      );
+    }
+
+    // Simple array of strings/numbers
     return (
       <div className="space-y-2">
         <Label>{label}</Label>

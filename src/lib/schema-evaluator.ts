@@ -7,7 +7,9 @@ const ASTRO_CONTENT_MOCK = {
   defineCollection: (config: any) => config,
   defineConfig: (config: any) => config,
   z, // Astro re-exports Zod
-  reference: (config: any) => config,
+  // reference: (config: any) => config,
+  reference: () => z.string().describe("Reference to another collection"),
+
   getCollection: (config: any) => config,
   getEntry: (config: any) => config,
   getEntries: (config: any) => config,

@@ -20,8 +20,18 @@ import { SchemaForm } from "@/components/SchemaForm";
 import { MarkdownEditor } from "@/components/MarkdownEditor";
 import { PreviewPane } from "@/components/PreviewPane";
 import { Button } from "@/components/ui/button";
-import { FileText, FolderOpen, Save, AlertCircle } from "lucide-react";
+import {
+  FileText,
+  FolderOpen,
+  Save,
+  AlertCircle,
+  DownloadIcon,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  NativeSelect,
+  NativeSelectOption,
+} from "@/components/ui/native-select";
 
 export default function MainEditor() {
   const [schemas, setSchemas] = useState<CollectionSchema[]>([]);
@@ -43,7 +53,10 @@ export default function MainEditor() {
     setLoading(true);
     setError(null);
     try {
-      const file = await pickFile({ "text/typescript": [".ts"] });
+      const file = await pickFile({
+        "text/typescript": [".ts"],
+        "text/javascript": [".js"],
+      });
       if (!file) return;
 
       const text = await readFile(file.handle);
@@ -104,6 +117,34 @@ export default function MainEditor() {
     }
   };
 
+  const handleDownload = async () => {
+    // if (!selectedFile) return;
+    setLoading(true);
+    try {
+      const newContent = compileMarkdown(frontmatter, body);
+      const blob = new Blob([newContent], { type: "text/markdown" });
+      const blobURL = URL.createObjectURL(blob);
+      const tempAnchor = document.createElement("a");
+      tempAnchor.href = blobURL;
+      // Use the existing file name or a default
+      tempAnchor.download = selectedFile ? selectedFile.name : "document.md";
+
+      // 4. Trigger the download
+      document.body.appendChild(tempAnchor); // Required for Firefox
+      tempAnchor.click();
+
+      // 5. Clean up
+      window.URL.revokeObjectURL(blobURL);
+      document.body.removeChild(tempAnchor);
+
+      alert("File downloaded successfully!");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to download file");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleFrontmatterChange = (key: string, value: any) => {
     setFrontmatter((prev) => ({ ...prev, [key]: value }));
   };
@@ -122,16 +163,24 @@ export default function MainEditor() {
             <h1 className="text-xl font-bold">Astro MD Editor</h1>
             <div className="flex gap-2">
               <Button onClick={handleLoadConfig} disabled={loading}>
-                <FileText className="h-4 w-4 mr-2" />
+                <FileText className="size-4 mr-2" data-icon="inline-start" />
                 Load Config
               </Button>
               <Button onClick={handleLoadContentFolder} disabled={loading}>
-                <FolderOpen className="h-4 w-4 mr-2" />
+                <FolderOpen className="size-4 mr-2" data-icon="inline-start" />
                 Open Content
               </Button>
               <Button onClick={handleSave} disabled={!selectedFile || loading}>
-                <Save className="h-4 w-4 mr-2" />
+                <Save className="size-4 mr-2" data-icon="inline-start" />
                 Save
+              </Button>
+
+              <Button onClick={handleDownload} disabled={loading}>
+                <DownloadIcon
+                  className="size-4 mr-2"
+                  data-icon="inline-start"
+                />
+                Download
               </Button>
             </div>
           </div>
@@ -145,7 +194,7 @@ export default function MainEditor() {
             <AlertCircle className="h-4 w-4" />
             <span>{error}</span>
             <button onClick={() => setError(null)} className="ml-auto">
-              ×
+              X
             </button>
           </div>
         </div>
@@ -168,17 +217,17 @@ export default function MainEditor() {
           <div className="lg:col-span-1 space-y-4">
             <div className="border rounded-md p-4">
               <h2 className="font-semibold mb-3">Collections</h2>
-              <select
+              <NativeSelect
                 value={selectedCollection}
                 onChange={(e) => setSelectedCollection(e.target.value)}
                 className="w-full border rounded-md p-2 text-sm"
               >
                 {schemas.map((s) => (
-                  <option key={s.name} value={s.name}>
+                  <NativeSelectOption key={s.name} value={s.name}>
                     {s.name}
-                  </option>
+                  </NativeSelectOption>
                 ))}
-              </select>
+              </NativeSelect>
             </div>
 
             <div className="border rounded-md p-4">

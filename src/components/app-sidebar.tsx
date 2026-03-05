@@ -12,6 +12,7 @@ import {
   SidebarMenuItem,
   SidebarMenuSub,
   SidebarRail,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import type { FileEntry } from "@/lib/fs-access";
 import {
@@ -144,12 +145,25 @@ function TreeItem({
   selectedFile?: FileEntry | null;
   onSelectFile: (file: FileEntry) => void;
 }) {
+  const { setOpen, setOpenMobile, isMobile } = useSidebar();
+
+  const handleSelect = (file: FileEntry) => {
+    onSelectFile(file);
+
+    // close sidebar after selection
+    if (isMobile) {
+      setOpenMobile(false);
+    } else {
+      setOpen(false);
+    }
+  };
+
   if (item.isFile) {
     return (
       <SidebarMenuItem>
         <SidebarMenuButton
           isActive={selectedFile?.path === item.path}
-          onClick={() => item.fileHandle && onSelectFile(item.fileHandle)}
+          onClick={() => item.fileHandle && handleSelect(item.fileHandle)}
           className="data-[active=true]:bg-primary/10 data-[active=true]:text-primary justify-start"
         >
           <FileText className="h-4 w-4" />
@@ -164,27 +178,31 @@ function TreeItem({
     <SidebarMenuItem>
       <Collapsible
         className="group/collapsible [&[data-state=open]>button>svg:first-child]:rotate-90"
-        defaultOpen={true}
+        defaultOpen={false}
       >
-        <CollapsibleTrigger>
-          <SidebarMenuButton>
-            <ChevronRight className="transition-transform" />
-            <Folder className="h-4 w-4" />
-            <span>{item.name}</span>
-          </SidebarMenuButton>
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <SidebarMenuSub>
-            {item.children?.map((child) => (
-              <TreeItem
-                key={child.path}
-                item={child}
-                selectedFile={selectedFile}
-                onSelectFile={onSelectFile}
-              />
-            ))}
-          </SidebarMenuSub>
-        </CollapsibleContent>
+        <CollapsibleTrigger
+          render={
+            <SidebarMenuButton>
+              <ChevronRight className="transition-transform" />
+              <Folder className="h-4 w-4" />
+              <span>{item.name}</span>
+            </SidebarMenuButton>
+          }
+        />
+        <CollapsibleContent
+          render={
+            <SidebarMenuSub>
+              {item.children?.map((child) => (
+                <TreeItem
+                  key={child.path}
+                  item={child}
+                  selectedFile={selectedFile}
+                  onSelectFile={onSelectFile}
+                />
+              ))}
+            </SidebarMenuSub>
+          }
+        />
       </Collapsible>
     </SidebarMenuItem>
   );

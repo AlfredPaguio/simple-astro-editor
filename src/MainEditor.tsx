@@ -21,13 +21,7 @@ import { useEffect, useState } from "react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
 // Icons
@@ -43,12 +37,21 @@ import {
   AlertCircle,
   DownloadIcon,
   FileCode2,
+  FilePlusCornerIcon,
+  FileText,
   FolderOpen,
+  Layers,
   Save,
   Terminal,
   X,
 } from "lucide-react";
 import { useId } from "react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 export default function MainEditor() {
   const [schemas, setSchemas] = useState<CollectionSchema[]>([]);
@@ -279,66 +282,95 @@ export default function MainEditor() {
             {/* Main Content Area */}
             <section className="flex-1 overflow-y-auto h-full pt-4 pb-6 px-4 md:px-6">
               <div className="max-w-5xl mx-auto space-y-6">
+                {(selectedCollection || selectedFile) && (
+                  <div className="flex flex-wrap items-center gap-4 px-4 py-3 bg-muted/50 rounded-lg border">
+                    {selectedCollection && (
+                      <div className="flex items-center gap-2">
+                        <Layers className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">
+                          Collection:
+                        </span>
+                        <span className="font-mono text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded">
+                          {selectedCollection}
+                        </span>
+                      </div>
+                    )}
+                    {selectedFile ? (
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">
+                          File:
+                        </span>
+                        <span className="font-mono text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded">
+                          {selectedFile.name}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <FilePlusCornerIcon className="h-4 w-4 text-muted-foreground" />
+                        <span className="font-mono text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded">
+                          New File
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Frontmatter Section */}
                 {currentSchema && (
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-base">Frontmatter</CardTitle>
-                      <CardDescription className="space-y-1">
-                        <p>
-                          Editing metadata for collection:
-                          <span className="ml-2 font-mono text-xs font-medium text-primary">
-                            {selectedCollection}
+                  <Accordion defaultValue={["frontmatter"]}>
+                    <AccordionItem
+                      value="frontmatter"
+                      className="border rounded-lg"
+                    >
+                      <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                        <div className="flex items-center gap-2">
+                          <FileCode2 className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-base font-medium">
+                            Frontmatter
                           </span>
-                        </p>
-
-                        {selectedFile && (
-                          <p className="flex items-center gap-2">
-                            <span className="text-muted-foreground">File:</span>
-                            <span className="font-mono text-xs font-medium text-primary">
-                              {selectedFile.name}
-                            </span>
-                          </p>
-                        )}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <SchemaForm
-                        key={schemaFormKey}
-                        properties={currentSchema.jsonSchema.properties || {}}
-                        values={frontmatter}
-                        inferredFields={analysis.inferred}
-                        unknownFields={analysis.unknown}
-                        onChange={handleFrontmatterChange}
-                      />
-                    </CardContent>
-                  </Card>
+                          <span className="text-xs text-muted-foreground font-normal">
+                            ({analysis.known.length} Known fields)
+                          </span>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-4 pb-4">
+                        <SchemaForm
+                          key={schemaFormKey}
+                          properties={currentSchema.jsonSchema.properties || {}}
+                          values={frontmatter}
+                          inferredFields={analysis.inferred}
+                          unknownFields={analysis.unknown}
+                          onChange={handleFrontmatterChange}
+                        />
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
                 )}
 
                 {/* Markdown Editor Section */}
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                   <Card className="overflow-hidden">
-                    <CardHeader className="bg-muted/50 py-3 px-4 border-b">
+                    <CardHeader>
                       <CardTitle className="text-base font-medium">
                         Markdown
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="p-0">
-                      {/* Adjust height as needed */}
-                      <div className="h-[500px]">
+                      <div className="h-125">
                         <MarkdownEditor value={body} onChange={setBody} />
                       </div>
                     </CardContent>
                   </Card>
 
                   <Card className="overflow-hidden">
-                    <CardHeader className="bg-muted/50 py-3 px-4 border-b">
+                    <CardHeader>
                       <CardTitle className="text-base font-medium">
                         Preview
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="p-0">
-                      <div className="h-[500px]">
+                      <div className="h-125">
                         <PreviewPane
                           markdown={body}
                           className="h-full border-0"

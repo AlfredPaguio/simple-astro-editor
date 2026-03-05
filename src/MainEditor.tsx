@@ -3,7 +3,6 @@ import { PreviewPane } from "@/components/PreviewPane";
 import { SchemaForm } from "@/components/SchemaForm";
 import { compileMarkdown, parseMarkdown } from "@/lib/frontmatter";
 import {
-  isFileSystemAccessSupported,
   listMarkdownFiles,
   pickDirectory,
   pickFile,
@@ -14,10 +13,9 @@ import {
 import { analyzeFields } from "@/lib/inference";
 import {
   evaluateConfigText,
-  initializeEsbuild,
   type CollectionSchema,
 } from "@/lib/schema-evaluator";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -26,7 +24,14 @@ import { Separator } from "@/components/ui/separator";
 
 // Icons
 import { AppSidebar } from "@/components/app-sidebar";
+import FileSystemAccessAlert from "@/components/FileSystemAccessAlert";
 import { ModeToggle } from "@/components/mode-toggle";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import {
   SidebarInset,
   SidebarProvider,
@@ -46,12 +51,6 @@ import {
   X,
 } from "lucide-react";
 import { useId } from "react";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 
 export default function MainEditor() {
   const [schemas, setSchemas] = useState<CollectionSchema[]>([]);
@@ -63,13 +62,7 @@ export default function MainEditor() {
   const [body, setBody] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [fsSupported, setFsSupported] = useState(true);
   const schemaFormKey = useId();
-
-  useEffect(() => {
-    setFsSupported(isFileSystemAccessSupported());
-    initializeEsbuild();
-  }, []);
 
   const handleLoadConfig = async () => {
     setLoading(true);
@@ -265,18 +258,7 @@ export default function MainEditor() {
             </div>
           )}
 
-          {!fsSupported && (
-            <div className="container pt-4">
-              <Alert>
-                <Terminal className="h-4 w-4" />
-                <AlertTitle>Browser Support Notice</AlertTitle>
-                <AlertDescription>
-                  File System Access API not supported. Drag-and-drop fallback
-                  is available.
-                </AlertDescription>
-              </Alert>
-            </div>
-          )}
+          <FileSystemAccessAlert />
 
           <main className="flex-1 overflow-hidden flex flex-col lg:flex-row">
             {/* Main Content Area */}

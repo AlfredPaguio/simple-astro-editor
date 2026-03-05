@@ -1,6 +1,26 @@
+import {
+  ChevronRight,
+  FileText,
+  Folder,
+  FolderOpenIcon,
+  Layers,
+} from "lucide-react";
 import * as React from "react";
-import { ChevronRight, FileText, Folder, Layers } from "lucide-react";
 
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "@/components/ui/combobox";
+import { InputGroupAddon } from "@/components/ui/input-group";
 import {
   Sidebar,
   SidebarContent,
@@ -14,17 +34,8 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
-import type { FileEntry } from "@/lib/fs-access";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import type { TreeNode } from "@/lib/file-tree-utils";
-import {
-  NativeSelect,
-  NativeSelectOption,
-} from "@/components/ui/native-select";
+import type { FileEntry } from "@/lib/fs-access";
 
 type FileItem = FileEntry;
 
@@ -57,8 +68,9 @@ export function AppSidebar({
         <SidebarGroup>
           <SidebarGroupLabel>Collections</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
-              {collections.length > 0 ? (
+            <SidebarMenu className="gap-1">
+              {collections.length > 0 &&
+                collections.length < 5 &&
                 collections.map((item) => (
                   <SidebarMenuItem key={item.name}>
                     <SidebarMenuButton
@@ -70,34 +82,45 @@ export function AppSidebar({
                       <span>{item.name}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
-                ))
-              ) : (
+                ))}
+
+              {collections.length > 0 && collections.length > 5 && (
+                <Combobox
+                  items={collections}
+                  itemToStringValue={(collection: CollectionItem) =>
+                    collection.name
+                  }
+                  autoHighlight
+                >
+                  <ComboboxInput placeholder="Select a collection" showClear>
+                    <InputGroupAddon>
+                      <Layers />
+                    </InputGroupAddon>
+                  </ComboboxInput>
+                  <ComboboxContent alignOffset={-28} className="w-60">
+                    <ComboboxEmpty>No Collections found.</ComboboxEmpty>
+                    <ComboboxList>
+                      {(collection) => (
+                        <ComboboxItem
+                          key={collection.name}
+                          value={collection.name}
+                        >
+                          {collection.name}
+                        </ComboboxItem>
+                      )}
+                    </ComboboxList>
+                  </ComboboxContent>
+                </Combobox>
+              )}
+
+              {collections.length <= 0 && (
                 <SidebarMenuItem>
                   <SidebarMenuButton disabled>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-muted-foreground">
                       No config loaded
                     </span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-              )}
-
-              <span className="p-4">Or Select</span>
-              {collections.length > 0 ? (
-                <NativeSelect
-                  value={selectedCollection}
-                  onChange={(e) => onSelectCollection(e.target.value)}
-                  className="w-full text-sm"
-                >
-                  {collections.map((s) => (
-                    <NativeSelectOption key={s.name} value={s.name}>
-                      {s.name}
-                    </NativeSelectOption>
-                  ))}
-                </NativeSelect>
-              ) : (
-                <p className="text-xs text-muted-foreground italic">
-                  No config loaded
-                </p>
               )}
             </SidebarMenu>
           </SidebarGroupContent>
@@ -107,7 +130,7 @@ export function AppSidebar({
         <SidebarGroup>
           <SidebarGroupLabel>Files</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="gap-1">
               {fileTree.length > 0 ? (
                 fileTree.map((node) => (
                   <TreeItem
@@ -146,6 +169,7 @@ function TreeItem({
   onSelectFile: (file: FileEntry) => void;
 }) {
   const { setOpen, setOpenMobile, isMobile } = useSidebar();
+  const [isCollapsibleOpen, setIsCollapsibleOpen] = React.useState(false);
 
   const handleSelect = (file: FileEntry) => {
     onSelectFile(file);
@@ -179,12 +203,18 @@ function TreeItem({
       <Collapsible
         className="group/collapsible [&[data-state=open]>button>svg:first-child]:rotate-90"
         defaultOpen={false}
+        open={isCollapsibleOpen}
+        onOpenChange={setIsCollapsibleOpen}
       >
         <CollapsibleTrigger
           render={
             <SidebarMenuButton>
               <ChevronRight className="transition-transform" />
-              <Folder className="h-4 w-4" />
+              {!isCollapsibleOpen ? (
+                <Folder className="size-4" />
+              ) : (
+                <FolderOpenIcon className="size-4" />
+              )}
               <span>{item.name}</span>
             </SidebarMenuButton>
           }

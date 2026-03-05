@@ -1,4 +1,4 @@
-export interface FileHandle {
+export interface FileEntry {
   handle: FileSystemFileHandle;
   name: string;
   path: string;
@@ -12,7 +12,7 @@ export interface DirectoryHandle {
 
 export async function pickDirectory(): Promise<DirectoryHandle | null> {
   try {
-    const handle = await (window as any).showDirectoryPicker({
+    const handle = await window.showDirectoryPicker({
       mode: "readwrite",
     });
     return {
@@ -21,7 +21,7 @@ export async function pickDirectory(): Promise<DirectoryHandle | null> {
       path: "(root)",
     };
   } catch (err) {
-    if ((err as any).name === "AbortError") {
+    if ((err as DOMException).name === "AbortError") {
       return null; // User cancelled
     }
     console.error("Directory picker failed:", err);
@@ -30,13 +30,13 @@ export async function pickDirectory(): Promise<DirectoryHandle | null> {
 }
 
 export async function pickFile(
-  acceptTypes: Record<string, string[]> = {
+  acceptTypes: Record<`${string}/${string}`, `.${string}`[]> = {
     "text/markdown": [".md", ".mdx"],
     "text/typescript": [".ts"],
   },
-): Promise<FileHandle | null> {
+): Promise<FileEntry | null> {
   try {
-    const [handle] = await (window as any).showOpenFilePicker({
+    const [handle] = await window.showOpenFilePicker({
       types: [{ description: "Files", accept: acceptTypes }],
       multiple: false,
     });
@@ -47,7 +47,7 @@ export async function pickFile(
       path: file.name,
     };
   } catch (err) {
-    if ((err as any).name === "AbortError") {
+    if ((err as DOMException).name === "AbortError") {
       return null;
     }
     console.error("File picker failed:", err);
@@ -70,14 +70,14 @@ export async function writeFile(
 }
 
 export async function createBackup(
-  handle: FileSystemFileHandle,
+  dirHandle: FileSystemDirectoryHandle,
+  fileHandle: FileSystemFileHandle,
   content: string,
 ): Promise<void> {
-  const fileName = handle.name;
-  const backupName = fileName + ".bak";
+  const backupName = fileHandle.name + ".bak";
 
   // Create backup in same directory
-  const backupHandle = await (handle as any).getFileSystem().getFileHandle(backupName, {
+  const backupHandle = await dirHandle.getFileHandle(backupName, {
     create: true,
   });
 
@@ -87,10 +87,10 @@ export async function createBackup(
 export async function listMarkdownFiles(
   dirHandle: FileSystemDirectoryHandle,
   path: string = "",
-): Promise<FileHandle[]> {
-  const files: FileHandle[] = [];
+): Promise<FileEntry[]> {
+  const files: FileEntry[] = [];
 
-  for await (const entry of (dirHandle as any).values()) {
+  for await (const entry of dirHandle.values()) {
     const entryPath = path ? `${path}/${entry.name}` : entry.name;
 
     if (entry.kind === "file") {

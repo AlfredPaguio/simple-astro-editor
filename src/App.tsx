@@ -1,16 +1,18 @@
-// import { TestConfigEditor } from "@/Tester";
-import { ThemeProvider } from "./components/theme-provider";
-import { TooltipProvider } from "./components/ui/tooltip";
+import { TestConfigEditor } from "@/Tester";
 import MainEditor from "@/MainEditor";
+import { BrowserRouter, Routes, Route } from "react-router";
+import Providers from "@/components/Providers";
 
 export function App() {
   return (
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <TooltipProvider>
-        <MainEditor />
-        {/* <TestConfigEditor /> */}
-      </TooltipProvider>
-    </ThemeProvider>
+    <Providers>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<MainEditor />} />
+          <Route path="/tester" element={<TestConfigEditor />} />
+        </Routes>
+      </BrowserRouter>
+    </Providers>
   );
 }
 

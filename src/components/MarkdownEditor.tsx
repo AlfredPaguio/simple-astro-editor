@@ -1,7 +1,7 @@
-import CodeMirror from "@uiw/react-codemirror";
+import { cn } from "@/lib/utils";
 import { markdown } from "@codemirror/lang-markdown";
 import { oneDark } from "@codemirror/theme-one-dark";
-import { cn } from "@/lib/utils";
+import CodeMirror from "@uiw/react-codemirror";
 
 interface MarkdownEditorProps {
   value: string;
@@ -15,10 +15,10 @@ export function MarkdownEditor({
   className,
 }: MarkdownEditorProps) {
   return (
-    <div className={cn("border rounded-md overflow-hidden", className)}>
+    <div className={cn("h-full overflow-hidden", className)}>
       <CodeMirror
         value={value}
-        height="600px"
+        height="100%"
         theme={oneDark}
         extensions={[markdown()]}
         onChange={(v) => onChange(v)}
@@ -27,7 +27,7 @@ export function MarkdownEditor({
           highlightActiveLine: true,
           foldGutter: true,
         }}
-        className="text-sm"
+        className="h-full text-sm [&_.cm-editor]:h-full [&_.cm-scroller]:h-full"
       />
     </div>
   );

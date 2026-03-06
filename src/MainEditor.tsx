@@ -10,6 +10,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -17,6 +18,11 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { buildFileTree, sortTree } from "@/lib/file-tree-utils";
 import { compileMarkdown, parseMarkdown } from "@/lib/frontmatter";
 import {
@@ -51,8 +57,7 @@ export default function MainEditor() {
   const [selectedCollection, setSelectedCollection] = useState<string>("");
   const [files, setFiles] = useState<FileEntry[]>([]);
   const [selectedFile, setSelectedFile] = useState<FileEntry | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [frontmatter, setFrontmatter] = useState<Record<string, any>>({});
+  const [frontmatter, setFrontmatter] = useState<Record<string, unknown>>({});
   const [body, setBody] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -71,9 +76,7 @@ export default function MainEditor() {
       const text = await readFile(file.handle);
       const result = await evaluateConfigText(text);
       setSchemas(result);
-      if (result.length > 0) {
-        setSelectedCollection(result[0].name);
-      }
+      if (result.length > 0) setSelectedCollection(result[0].name);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load config");
     } finally {
@@ -118,8 +121,6 @@ export default function MainEditor() {
     try {
       const newContent = compileMarkdown(frontmatter, body);
       await writeFile(selectedFile.handle, newContent);
-      // You could replace this with a Toast notification from shadcn
-      alert("File saved successfully!");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save file");
     } finally {
@@ -147,8 +148,7 @@ export default function MainEditor() {
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleFrontmatterChange = (key: string, value: any) => {
+  const handleFrontmatterChange = (key: string, value: unknown) => {
     setFrontmatter((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -158,7 +158,6 @@ export default function MainEditor() {
     : { known: [], inferred: [], unknown: [] };
 
   const fileTree = buildFileTree(files);
-  // then we sort after finishing file tree
   sortTree(fileTree);
 
   return (
@@ -174,75 +173,105 @@ export default function MainEditor() {
 
       <SidebarInset>
         <div className="flex flex-col h-screen bg-background">
-          {/* Top Navigation */}
           <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 px-4">
-            <div className="flex h-14 items-center">
-              <SidebarTrigger className="-ml-1 mr-2" />
-              <Separator orientation="vertical" className="mr-2" />
-              <div className="flex items-center gap-2 mr-4">
-                <Terminal className="h-6 w-6" />
-                <h1 className="text-lg font-semibold tracking-tight">
+            <div className="flex h-14 items-center gap-2">
+              <SidebarTrigger className="-ml-1" />
+              <Separator orientation="vertical" />
+
+              <div className="flex items-center gap-2">
+                <Terminal className="h-5 w-5 text-primary" />
+                <h1 className="text-base font-semibold tracking-tight">
                   Astro Content Editor
                 </h1>
               </div>
 
               <div className="flex flex-1 items-center justify-end gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleLoadConfig}
-                  disabled={loading}
-                >
-                  <FileCode2 className="h-4 w-4 mr-2" />
-                  Config
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleLoadContentFolder}
-                  disabled={loading}
-                >
-                  <FolderOpen className="h-4 w-4 mr-2" />
-                  Folder
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleLoadConfig}
+                        disabled={loading}
+                      >
+                        <FileCode2 className="h-4 w-4 mr-2" />
+                        Config
+                      </Button>
+                    }
+                  />
+                  <TooltipContent>Load content.config.ts</TooltipContent>
+                </Tooltip>
 
-                <Separator orientation="vertical" className="h-6 mx-2" />
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleLoadContentFolder}
+                        disabled={loading}
+                      >
+                        <FolderOpen className="h-4 w-4 mr-2" />
+                        Folder
+                      </Button>
+                    }
+                  />
+                  <TooltipContent>Open content folder</TooltipContent>
+                </Tooltip>
 
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={handleSave}
-                  disabled={!selectedFile || loading}
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  Save
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={handleDownload}
-                  disabled={loading}
-                >
-                  <DownloadIcon className="h-4 w-4 mr-2" />
-                  Download
-                </Button>
+                <Separator orientation="vertical" />
+
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={handleSave}
+                        disabled={!selectedFile || loading}
+                      >
+                        <Save className="h-4 w-4 mr-2" />
+                        Save
+                      </Button>
+                    }
+                  />
+                  <TooltipContent>Save file to disk</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={handleDownload}
+                        disabled={loading}
+                      >
+                        <DownloadIcon className="h-4 w-4 mr-2" />
+                        Download
+                      </Button>
+                    }
+                  />
+                  <TooltipContent>Download as .md file</TooltipContent>
+                </Tooltip>
+
                 <ModeToggle />
               </div>
             </div>
           </header>
 
-          {/* Error / Warning Banners */}
           {error && (
-            <div className="container pt-4">
+            <div className="px-4 pt-3">
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Error</AlertTitle>
                 <AlertDescription className="flex justify-between items-center w-full">
-                  {error}
+                  <span>{error}</span>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6"
+                    className="h-6 w-6 ml-4 shrink-0"
                     onClick={() => setError(null)}
                   >
                     <X className="h-4 w-4" />
@@ -255,44 +284,51 @@ export default function MainEditor() {
           <FileSystemAccessAlert />
 
           <main className="flex-1 overflow-hidden flex flex-col lg:flex-row">
-            {/* Main Content Area */}
             <section className="flex-1 overflow-y-auto h-full pt-4 pb-6 px-4 md:px-6">
-              <div className="space-y-6">
+              <div className="space-y-5">
                 {(selectedCollection || selectedFile) && (
-                  <div className="flex flex-wrap items-center gap-4 px-4 py-3 bg-muted/50 rounded-lg border">
+                  <div className="flex flex-wrap items-center gap-3 px-4 py-2.5 bg-muted/40 rounded-lg border">
                     {selectedCollection && (
                       <div className="flex items-center gap-2">
-                        <Layers className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm text-muted-foreground">
-                          Collection:
+                        <Layers className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground">
+                          Collection
                         </span>
-                        <span className="font-mono text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded">
+                        <Badge
+                          variant="secondary"
+                          className="font-mono text-xs font-medium"
+                        >
                           {selectedCollection}
-                        </span>
+                        </Badge>
                       </div>
+                    )}
+                    {selectedCollection && selectedFile && (
+                      <Separator orientation="vertical" className="h-4" />
                     )}
                     {selectedFile ? (
                       <div className="flex items-center gap-2">
-                        <FileText className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm text-muted-foreground">
-                          File:
+                        <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground">
+                          File
                         </span>
-                        <span className="font-mono text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded">
+                        <Badge
+                          variant="secondary"
+                          className="font-mono text-xs font-medium"
+                        >
                           {selectedFile.name}
-                        </span>
+                        </Badge>
                       </div>
                     ) : (
                       <div className="flex items-center gap-2">
-                        <FilePlusCornerIcon className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-mono text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded">
+                        <FilePlusCornerIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                        <Badge variant="outline" className="font-mono text-xs">
                           New File
-                        </span>
+                        </Badge>
                       </div>
                     )}
                   </div>
                 )}
 
-                {/* Frontmatter Section */}
                 {currentSchema && (
                   <Accordion defaultValue={["frontmatter"]}>
                     <AccordionItem
@@ -302,12 +338,15 @@ export default function MainEditor() {
                       <AccordionTrigger className="px-4 py-3 hover:no-underline">
                         <div className="flex items-center gap-2">
                           <FileCode2 className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-base font-medium">
+                          <span className="text-sm font-medium">
                             Frontmatter
                           </span>
-                          <span className="text-xs text-muted-foreground font-normal">
-                            ({analysis.known.length} Known fields)
-                          </span>
+                          <Badge
+                            variant="secondary"
+                            className="text-xs font-normal ml-1"
+                          >
+                            {analysis.known.length} fields
+                          </Badge>
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="px-4 pb-4">
@@ -324,7 +363,6 @@ export default function MainEditor() {
                   </Accordion>
                 )}
 
-                {/* Markdown Editor Section */}
                 <div className="space-y-4">
                   <MainEditorPanels body={body} setBody={setBody} />
                 </div>

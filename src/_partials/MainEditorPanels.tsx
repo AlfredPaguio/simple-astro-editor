@@ -3,19 +3,19 @@ import { PreviewPane } from "@/components/PreviewPane";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Columns2,
-  Eye,
-  PanelLeftClose,
-  PanelRightClose,
-  RotateCcwIcon as ResetIcon,
-  SquareCode,
+    Columns2,
+    Eye,
+    PanelLeftClose,
+    PanelRightClose,
+    RotateCcwIcon as ResetIcon,
+    SquareCode,
 } from "lucide-react";
 import { useState } from "react";
 import {
-  GridLayout,
-  horizontalCompactor,
-  useContainerWidth,
-  useResponsiveLayout,
+    GridLayout,
+    horizontalCompactor,
+    useContainerWidth,
+    useResponsiveLayout,
 } from "react-grid-layout";
 
 import "react-grid-layout/css/styles.css";
@@ -159,7 +159,7 @@ export default function MainEditorPanels({ body, setBody }: Props) {
             {/* Editor panel */}
             {showEditor && (
               <Card className="overflow-hidden flex flex-col" key="editor">
-                <CardHeader className="py-2 px-3 border-b drag-handle cursor-grab active:cursor-grabbing select-none">
+                <CardHeader className="py-2 px-3 border-b drag-handle cursor-grab active:cursor-grabbing select-none shrink-0">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-sm font-medium flex items-center gap-1.5">
                       <SquareCode className="h-3.5 w-3.5 text-muted-foreground" />
@@ -176,7 +176,7 @@ export default function MainEditorPanels({ body, setBody }: Props) {
                     </Button>
                   </div>
                 </CardHeader>
-                <CardContent className="p-0 flex-1 overflow-hidden">
+                <CardContent className="p-0 flex-1 min-h-0 overflow-hidden">
                   <div className="h-full">
                     <MarkdownEditor value={body} onChange={setBody} />
                   </div>
@@ -187,7 +187,7 @@ export default function MainEditorPanels({ body, setBody }: Props) {
             {/* Preview panel */}
             {showPreview && (
               <Card className="overflow-hidden flex flex-col" key="preview">
-                <CardHeader className="py-2 px-3 border-b drag-handle cursor-grab active:cursor-grabbing select-none">
+                <CardHeader className="py-2 px-3 border-b drag-handle cursor-grab active:cursor-grabbing select-none shrink-0">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-sm font-medium flex items-center gap-1.5">
                       <Eye className="h-3.5 w-3.5 text-muted-foreground" />
@@ -204,7 +204,7 @@ export default function MainEditorPanels({ body, setBody }: Props) {
                     </Button>
                   </div>
                 </CardHeader>
-                <CardContent className="p-0 flex-1 overflow-hidden">
+                <CardContent className="p-0 flex-1 overflow-hidden min-h-0">
                   <PreviewPane markdown={body} className="h-full border-0" />
                 </CardContent>
               </Card>
@@ -238,12 +238,7 @@ export default function MainEditorPanels({ body, setBody }: Props) {
 /** Build default layouts for a given visibility state */
 function buildDefaultLayouts(showEditor: boolean, showPreview: boolean) {
   type LayoutItem = { i: string; x: number; y: number; w: number; h: number };
-  const makeLayouts = (
-    editorW: number,
-    previewW: number,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _totalCols: number,
-  ) => {
+  const makeLayouts = (editorW: number, previewW: number) => {
     const items: LayoutItem[] = [];
     if (showEditor)
       items.push({ i: "editor", x: 0, y: 0, w: editorW, h: PANEL_H });
@@ -260,11 +255,11 @@ function buildDefaultLayouts(showEditor: boolean, showPreview: boolean) {
 
   const both = showEditor && showPreview;
   return {
-    lg: makeLayouts(both ? 6 : 12, both ? 6 : 12, 12),
-    md: makeLayouts(both ? 5 : 10, both ? 5 : 10, 10),
-    sm: makeLayouts(both ? 3 : 6, both ? 3 : 6, 6),
-    xs: makeLayouts(both ? 2 : 4, both ? 2 : 4, 4),
-    xxs: makeLayouts(2, 2, 2),
+    lg: makeLayouts(both ? 6 : 12, both ? 6 : 12),
+    md: makeLayouts(both ? 5 : 10, both ? 5 : 10),
+    sm: makeLayouts(both ? 3 : 6, both ? 3 : 6),
+    xs: makeLayouts(both ? 2 : 4, both ? 2 : 4),
+    xxs: makeLayouts(2, 2),
   };
 }
 

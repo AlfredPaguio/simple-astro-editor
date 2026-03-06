@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { renderMarkdown } from "@/lib/preview";
 import { cn } from "@/lib/utils";
-import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle, Clock, FileText } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { useEffect, useState } from "react";
 
 interface PreviewPaneProps {
   markdown: string;
@@ -61,7 +60,7 @@ export function PreviewPane({ markdown, className }: PreviewPaneProps) {
   return (
     <div className={cn("flex flex-col h-full", className)}>
       {/* Stats Bar */}
-      <div className="flex items-center gap-4 px-4 py-2 border-b bg-muted/30 text-xs text-muted-foreground">
+      <div className="flex items-center gap-4 px-4 py-2 border-b bg-muted/30 text-xs text-muted-foreground shrink-0">
         <div className="flex items-center gap-1.5">
           <FileText className="h-3.5 w-3.5" />
           <span>{words} words</span>
@@ -73,9 +72,9 @@ export function PreviewPane({ markdown, className }: PreviewPaneProps) {
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto relative w-full">
         {loading && (
-          <div className="p-6 space-y-4">
+          <div className="absolute inset-0 p-6 space-y-4 bg-background z-10">
             <Skeleton className="h-6 w-3/4" />
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-5/6" />
@@ -86,24 +85,23 @@ export function PreviewPane({ markdown, className }: PreviewPaneProps) {
 
         {error && (
           <div className="flex items-center gap-2 p-4 text-sm text-destructive">
-            <AlertCircle className="h-4 w-4" />
+            <AlertCircle className="h-4 w-4 shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
         {!loading && !error && !html && (
-          <div className="flex items-center justify-center h-full text-muted-foreground text-sm bg-white">
-            No content to preview
+          <div className="flex flex-col items-center justify-center h-full text-muted-foreground text-sm gap-2 bg-white">
+            <FileText className="h-8 w-8 opacity-30" />
+            <span>Nothing to preview yet</span>
           </div>
         )}
 
         {!loading && !error && html && (
-          <ScrollArea>
-            <div
-              className="prose max-w-none p-6 dark:prose bg-white w-full h-full overflow-hidden"
-              dangerouslySetInnerHTML={{ __html: html }}
-            />
-          </ScrollArea>
+          <div
+            className="prose max-w-none dark:prose bg-white overflow-hidden p-6 w-full"
+            dangerouslySetInnerHTML={{ __html: html }}
+          />
         )}
       </div>
     </div>

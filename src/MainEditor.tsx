@@ -1,6 +1,23 @@
-import { MarkdownEditor } from "@/components/MarkdownEditor";
-import { PreviewPane } from "@/components/PreviewPane";
+import MainEditorPanels from "@/_partials/MainEditorPanels";
+import { AppSidebar } from "@/components/app-sidebar";
+import FileSystemAccessAlert from "@/components/FileSystemAccessAlert";
+import { ModeToggle } from "@/components/mode-toggle";
 import { SchemaForm } from "@/components/SchemaForm";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import { buildFileTree, sortTree } from "@/lib/file-tree-utils";
 import { compileMarkdown, parseMarkdown } from "@/lib/frontmatter";
 import {
   listMarkdownFiles,
@@ -15,29 +32,6 @@ import {
   evaluateConfigText,
   type CollectionSchema,
 } from "@/lib/schema-evaluator";
-import { useState } from "react";
-
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-
-// Icons
-import { AppSidebar } from "@/components/app-sidebar";
-import FileSystemAccessAlert from "@/components/FileSystemAccessAlert";
-import { ModeToggle } from "@/components/mode-toggle";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
-import { buildFileTree, sortTree } from "@/lib/file-tree-utils";
 import {
   AlertCircle,
   DownloadIcon,
@@ -50,7 +44,7 @@ import {
   Terminal,
   X,
 } from "lucide-react";
-import { useId } from "react";
+import { useId, useState } from "react";
 
 export default function MainEditor() {
   const [schemas, setSchemas] = useState<CollectionSchema[]>([]);
@@ -331,35 +325,8 @@ export default function MainEditor() {
                 )}
 
                 {/* Markdown Editor Section */}
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                  <Card className="overflow-hidden">
-                    <CardHeader>
-                      <CardTitle className="text-base font-medium">
-                        Markdown
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                      <div className="h-125">
-                        <MarkdownEditor value={body} onChange={setBody} />
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="overflow-hidden">
-                    <CardHeader>
-                      <CardTitle className="text-base font-medium">
-                        Preview
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                      <div className="h-125">
-                        <PreviewPane
-                          markdown={body}
-                          className="h-full border-0"
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
+                <div className="space-y-4">
+                  <MainEditorPanels body={body} setBody={setBody} />
                 </div>
               </div>
             </section>

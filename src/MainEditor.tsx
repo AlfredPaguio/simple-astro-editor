@@ -257,7 +257,7 @@ export default function MainEditor() {
           <main className="flex-1 overflow-hidden flex flex-col lg:flex-row">
             {/* Main Content Area */}
             <section className="flex-1 overflow-y-auto h-full pt-4 pb-6 px-4 md:px-6">
-              <div className="max-w-5xl mx-auto space-y-6">
+              <div className="space-y-6">
                 {(selectedCollection || selectedFile) && (
                   <div className="flex flex-wrap items-center gap-4 px-4 py-3 bg-muted/50 rounded-lg border">
                     {selectedCollection && (

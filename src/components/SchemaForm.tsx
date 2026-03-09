@@ -1,9 +1,10 @@
 /* eslint-disable react-hooks/static-components */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -11,12 +12,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { AlertTriangle, Plus, X, Trash2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Switch } from "@/components/ui/switch";
 import type { InferredField } from "@/lib/inference";
+import { cn } from "@/lib/utils";
+import {
+  AlertTriangle,
+  BinaryIcon,
+  CalendarDaysIcon,
+  HashIcon,
+  LinkIcon,
+  ListIcon,
+  MailIcon,
+  Plus,
+  ShapesIcon,
+  TextIcon,
+  Trash2,
+  TypeIcon,
+  X,
+} from "lucide-react";
 
 interface SchemaFormProps {
   properties: Record<string, any>;
@@ -33,12 +46,14 @@ export function SchemaForm({
   unknownFields,
   onChange,
 }: SchemaFormProps) {
+  const hasKnownFields = Object.keys(properties).length > 0;
+
   return (
-    <TooltipProvider>
-      <div className="space-y-6">
-        {/* Known fields from Zod schema */}
-        {Object.entries(properties).map(([key, schema]: [string, any]) => (
-          <FormField
+    <div className="space-y-6">
+      {/* Known fields from Zod schema */}
+      {hasKnownFields &&
+        Object.entries(properties).map(([key, schema]: [string, any]) => (
+          <CustomFormField
             key={key}
             name={key}
             schema={schema}
@@ -48,32 +63,42 @@ export function SchemaForm({
           />
         ))}
 
-        {/* Inferred fields section */}
-        {inferredFields.length > 0 && (
-          <Alert className="mt-6 border-yellow-200 bg-yellow-50 dark:bg-yellow-950 dark:border-yellow-800">
+      {/* Inferred fields section */}
+      {inferredFields.length > 0 && (
+        <Alert
+          className={cn(
+            "rounded-lg border overflow-hidden px-0 py-0",
+            hasKnownFields && "mt-4",
+          )}
+        >
+          <AlertTitle className="text-yellow-800 dark:text-yellow-200 flex items-center gap-2 px-3 py-2.5 bg-amber-50 dark:bg-amber-950/40 border-b border-amber-200 dark:border-amber-800/50">
             <AlertTriangle className="h-4 w-4 text-yellow-600" />
-            <AlertTitle className="text-yellow-800 dark:text-yellow-200">
-              Inferred Fields
-            </AlertTitle>
-            <AlertDescription className="text-yellow-700 dark:text-yellow-300 mb-4">
-              Found in frontmatter but not defined in content.config.ts
-              <div className="space-y-4 pt-4">
-                {inferredFields.map((field) => (
-                  <FormField
-                    key={field.key}
-                    name={field.key}
-                    schema={field.inferredSchema}
-                    value={field.value}
-                    onChange={onChange}
-                    status="inferred"
-                  />
-                ))}
-              </div>
-            </AlertDescription>
-          </Alert>
-        )}
-      </div>
-    </TooltipProvider>
+            Inferred Fields
+            <Badge
+              variant="outline"
+              className="ml-auto text-[10px] h-4 px-1.5 border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-400 font-normal"
+            >
+              {inferredFields.length} not in schema
+            </Badge>
+          </AlertTitle>
+          <AlertDescription className="divide-y divide-border text-yellow-700 dark:text-yellow-300">
+            Found in frontmatter but not defined in content.config.ts
+            <div className="space-y-4 pt-4">
+              {inferredFields.map((field) => (
+                <CustomFormField
+                  key={field.key}
+                  name={field.key}
+                  schema={field.inferredSchema}
+                  value={field.value}
+                  onChange={onChange}
+                  status="inferred"
+                />
+              ))}
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
+    </div>
   );
 }
 
@@ -85,7 +110,52 @@ interface FormFieldProps {
   status?: "known" | "inferred" | "unknown";
 }
 
-function FormField({
+function FieldTypeIcon({ schema }: { schema: any }) {
+  const type = schema?.type || "string";
+  const format = schema?.format;
+  const iconClass = "h-3 w-3 shrink-0";
+
+  if (schema?.enum) return <ListIcon className={iconClass} />;
+  if (type === "boolean") return <BinaryIcon className={iconClass} />;
+  if (type === "number") return <HashIcon className={iconClass} />;
+  if (type === "array") return <ShapesIcon className={iconClass} />;
+  if (type === "object") return <ShapesIcon className={iconClass} />;
+  if (format === "date" || format === "date-time")
+    return <CalendarDaysIcon className={iconClass} />;
+  if (format === "email") return <MailIcon className={iconClass} />;
+  if (format === "uri") return <LinkIcon className={iconClass} />;
+  if (type === "string") return <TypeIcon className={iconClass} />;
+  return <TextIcon className={iconClass} />;
+}
+
+function CustomFieldLabel({
+  name,
+  schema,
+  status,
+}: {
+  name: string;
+  schema: any;
+  status: "known" | "inferred" | "unknown";
+}) {
+  return (
+    <div className="flex items-center gap-1.5 mb-1.5">
+      <span className="text-muted-foreground/60">
+        <FieldTypeIcon schema={schema} />
+      </span>
+      <Label className="text-sm font-medium leading-none">{name}</Label>
+      {status === "inferred" && (
+        <Badge
+          variant="outline"
+          className="text-[10px] h-4 px-1.5 ml-auto border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-400 font-normal"
+        >
+          inferred
+        </Badge>
+      )}
+    </div>
+  );
+}
+
+function CustomFormField({
   name,
   schema,
   value,
@@ -96,45 +166,24 @@ function FormField({
   const format = schema.format;
   const enumOptions = schema.enum;
 
-  // Helper to generate Status Badge
-  const StatusBadge = () => {
-    if (status === "known") return null;
-    return (
-      <Badge
-        variant={status === "inferred" ? "outline" : "secondary"}
-        className={cn(
-          "ml-2 font-normal",
-          status === "inferred" &&
-            "border-yellow-400 text-yellow-700 bg-yellow-50",
-        )}
-      >
-        {status === "inferred" ? "Inferred" : "Optional"}
-      </Badge>
-    );
-  };
-
   // Helper for Input wrapper styles based on status
   const inputWrapperClass = cn(
-    "space-y-2",
-    status === "inferred" &&
-      "rounded-md p-2 -m-2 border border-dashed border-yellow-300 bg-yellow-50/50",
+    "px-3 py-2.5",
+    status === "inferred" && "bg-amber-50/40 dark:bg-amber-950/20",
   );
 
   // 1. Enum Selection
   if (enumOptions) {
     return (
       <div className={inputWrapperClass}>
-        <div className="flex items-center">
-          <Label className="text-sm font-medium">{name}</Label>
-          <StatusBadge />
-        </div>
+        <CustomFieldLabel name={name} schema={schema} status={status} />
         <Select value={value || ""} onValueChange={(v) => onChange(name, v)}>
-          <SelectTrigger>
+          <SelectTrigger className="h-8 text-sm">
             <SelectValue placeholder="Select an option..." />
           </SelectTrigger>
           <SelectContent>
             {enumOptions.map((opt: any) => (
-              <SelectItem key={opt} value={opt}>
+              <SelectItem key={opt} value={opt} className="text-sm">
                 {opt}
               </SelectItem>
             ))}
@@ -148,18 +197,13 @@ function FormField({
   if (type === "boolean") {
     return (
       <div
-        className={cn(
-          inputWrapperClass,
-          "flex items-center justify-between rounded-md border p-3 shadow-sm",
-        )}
+        className={cn(inputWrapperClass, "flex items-center justify-between")}
       >
-        <div className="flex items-center">
-          <Label className="text-sm font-medium">{name}</Label>
-          <StatusBadge />
-        </div>
+        <CustomFieldLabel name={name} schema={schema} status={status} />
         <Switch
           checked={value || false}
           onCheckedChange={(v) => onChange(name, v)}
+          className="ml-4 shrink-0"
         />
       </div>
     );
@@ -169,14 +213,12 @@ function FormField({
   if (type === "number") {
     return (
       <div className={inputWrapperClass}>
-        <div className="flex items-center">
-          <Label className="text-sm font-medium">{name}</Label>
-          <StatusBadge />
-        </div>
+        <CustomFieldLabel name={name} schema={schema} status={status} />
         <Input
           type="number"
           value={value || ""}
           onChange={(e) => onChange(name, e.target.valueAsNumber)}
+          className="h-8 text-sm"
         />
       </div>
     );
@@ -186,15 +228,12 @@ function FormField({
   if (type === "string" && (format === "date" || format === "date-time")) {
     return (
       <div className={inputWrapperClass}>
-        <div className="flex items-center">
-          <Label className="text-sm font-medium">{name}</Label>
-          <StatusBadge />
-        </div>
+        <CustomFieldLabel name={name} schema={schema} status={status} />
         <Input
           type={format === "date" ? "date" : "datetime-local"}
           value={value || ""}
           onChange={(e) => onChange(name, e.target.value)}
-          className="w-full md:w-auto"
+          className="h-8 text-sm w-full"
         />
       </div>
     );
@@ -204,15 +243,12 @@ function FormField({
   if (type === "object" && schema.properties) {
     const objectValue = value || {};
     return (
-      <div className="space-y-3 rounded-md border p-4 bg-muted/30">
-        <div className="flex items-center">
-          <Label className="text-sm font-semibold text-primary">{name}</Label>
-          <StatusBadge />
-        </div>
-        <div className="space-y-4 pl-4 border-l-2 border-border">
+      <div className={inputWrapperClass}>
+        <CustomFieldLabel name={name} schema={schema} status={status} />
+        <div className="rounded-md border bg-muted/20 overflow-hidden divide-y divide-border">
           {Object.entries(schema.properties).map(
             ([propKey, propSchema]: [string, any]) => (
-              <FormField
+              <CustomFormField
                 key={propKey}
                 name={propKey}
                 schema={propSchema}
@@ -237,37 +273,32 @@ function FormField({
     if (schema.items?.type === "object" && schema.items.properties) {
       const itemProperties = schema.items.properties;
       return (
-        <div className="space-y-3 rounded-md border p-4 bg-muted/30">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <Label className="text-sm font-semibold text-primary">
-                {name}
-              </Label>
-              <StatusBadge />
-            </div>
+        <div className={inputWrapperClass}>
+          <div className="flex items-center justify-between mb-2">
+            <CustomFieldLabel name={name} schema={schema} status={status} />
             <Button
               variant="outline"
               size="sm"
               onClick={() => onChange(name, [...arrayValue, {}])}
             >
-              <Plus className="h-3.5 w-3.5 mr-1" /> Add Item
+              <Plus className="size-4 mr-1" /> Add Item
             </Button>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-2">
             {arrayValue.length === 0 && (
               <p className="text-sm text-muted-foreground text-center py-2">
-                No items added.
+                No items yet.
               </p>
             )}
             {arrayValue.map((item: any, idx: number) => (
               <div
                 key={idx}
-                className="relative space-y-3 border rounded-md p-4 pt-8 bg-background"
+                className="rounded-md border bg-muted/20 overflow-hidden"
               >
-                <div className="absolute top-2 right-2 flex items-center gap-2">
-                  <span className="text-xs font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded">
-                    #{idx + 1}
+                <div className="flex items-center justify-between px-3 py-1.5 border-b bg-muted/30">
+                  <span className="text-xs font-mono text-muted-foreground">
+                    Item #{idx + 1}
                   </span>
                   <Button
                     variant="ghost"
@@ -282,10 +313,10 @@ function FormField({
                   </Button>
                 </div>
 
-                <div className="space-y-4 pl-4 border-l-2 border-border">
+                <div className="divide-y divide-border space-y-2">
                   {Object.entries(itemProperties).map(
                     ([propKey, propSchema]: [string, any]) => (
-                      <FormField
+                      <CustomFormField
                         key={propKey}
                         name={propKey}
                         schema={propSchema}
@@ -310,9 +341,8 @@ function FormField({
     // 6b. Simple Array (Strings/Numbers)
     return (
       <div className={inputWrapperClass}>
-        <div className="flex items-center">
-          <Label className="text-sm font-medium">{name}</Label>
-          <StatusBadge />
+        <div className="flex items-center justify-between mb-2">
+          <CustomFieldLabel name={name} schema={schema} status={status} />
         </div>
         <div className="space-y-2">
           {arrayValue.map((item: any, idx: number) => (
@@ -324,7 +354,7 @@ function FormField({
                   newArr[idx] = e.target.value;
                   onChange(name, newArr);
                 }}
-                className="flex-1"
+                className="flex-1 h-8 text-sm"
               />
               <Button
                 variant="ghost"
@@ -344,7 +374,7 @@ function FormField({
           <Button
             variant="outline"
             size="sm"
-            className="w-full"
+            className="w-full h-7 text-xs gap-1 border-dashed"
             onClick={() => onChange(name, [...arrayValue, ""])}
           >
             <Plus className="h-3.5 w-3.5 mr-2" /> Add Item
@@ -357,15 +387,19 @@ function FormField({
   // 7. Default: String Input
   return (
     <div className={inputWrapperClass}>
-      <div className="flex items-center">
-        <Label className="text-sm font-medium">{name}</Label>
-        <StatusBadge />
-      </div>
+      <CustomFieldLabel name={name} schema={schema} status={status} />
       <Input
         type={format === "email" ? "email" : format === "uri" ? "url" : "text"}
         value={value || ""}
         onChange={(e) => onChange(name, e.target.value)}
-        placeholder={format === "email" ? "email@example.com" : undefined}
+        placeholder={
+          format === "email"
+            ? "email@example.com"
+            : format === "uri"
+              ? "https://"
+              : undefined
+        }
+        className="h-8 text-sm"
       />
     </div>
   );

@@ -9,6 +9,17 @@ interface MarkdownEditorProps {
   className?: string;
 }
 
+// Defined outside the component — these are created once for the lifetime of
+// the app. If they were inside the component, every render would produce a new
+// array/extension instance, causing CodeMirror to tear down and rebuild its
+// entire editor state on every keystroke.
+const EXTENSIONS = [markdown()];
+const BASIC_SETUP = {
+  lineNumbers: true,
+  highlightActiveLine: true,
+  foldGutter: true,
+};
+
 export function MarkdownEditor({
   value,
   onChange,
@@ -20,13 +31,9 @@ export function MarkdownEditor({
         value={value}
         height="100%"
         theme={oneDark}
-        extensions={[markdown()]}
+        extensions={EXTENSIONS}
         onChange={(v) => onChange(v)}
-        basicSetup={{
-          lineNumbers: true,
-          highlightActiveLine: true,
-          foldGutter: true,
-        }}
+        basicSetup={BASIC_SETUP}
         className="h-full text-sm [&_.cm-editor]:h-full [&_.cm-scroller]:h-full"
       />
     </div>

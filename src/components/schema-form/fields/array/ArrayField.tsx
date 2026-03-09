@@ -6,7 +6,6 @@ export default function ArrayField({
   name,
   schema,
   value,
-  onChange,
   status = "known",
 }: SchemaFieldProps) {
   const arrayValue = Array.isArray(value) ? value : [];
@@ -18,7 +17,6 @@ export default function ArrayField({
     return (
       <ArrayObjectField
         name={name}
-        onChange={onChange}
         schema={schema}
         value={arrayValue}
         status={status}
@@ -30,7 +28,6 @@ export default function ArrayField({
   return (
     <ArrayPrimitiveField
       name={name}
-      onChange={onChange}
       schema={schema}
       value={arrayValue}
       status={status}

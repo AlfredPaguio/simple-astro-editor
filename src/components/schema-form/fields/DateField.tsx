@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import FieldLabelContent from "@/components/schema-form/FieldLabelContent";
 import type { SchemaFieldProps } from "@/components/schema-form/SchemaField";
+import { useSchemaForm } from "@/components/schema-form/SchemaFormContext";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -12,11 +13,11 @@ interface Props {
 export default function DateField({
   name,
   value,
-  onChange,
   status = "known",
   schema,
   format,
 }: SchemaFieldProps & Props) {
+  const { onChange } = useSchemaForm();
   return (
     <Field
       className={cn(

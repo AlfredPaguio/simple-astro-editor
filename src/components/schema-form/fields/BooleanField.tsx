@@ -1,5 +1,6 @@
 import FieldLabelContent from "@/components/schema-form/FieldLabelContent";
 import type { SchemaFieldProps } from "@/components/schema-form/SchemaField";
+import { useSchemaForm } from "@/components/schema-form/SchemaFormContext";
 import { Field, FieldContent, FieldLabel } from "@/components/ui/field";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
@@ -8,9 +9,10 @@ export default function BooleanField({
   name,
   schema,
   value,
-  onChange,
   status = "known",
 }: SchemaFieldProps) {
+  const { onChange } = useSchemaForm();
+
   return (
     <Field
       orientation="horizontal"

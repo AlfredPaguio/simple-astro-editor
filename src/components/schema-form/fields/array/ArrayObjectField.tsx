@@ -1,6 +1,10 @@
 import { FieldTypeIcon } from "@/components/schema-form/FieldTypeIcon";
 import type { SchemaFieldProps } from "@/components/schema-form/SchemaField";
 import SchemaField from "@/components/schema-form/SchemaField";
+import {
+  SchemaFormProvider,
+  useSchemaForm,
+} from "@/components/schema-form/SchemaFormContext";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FieldGroup, FieldLegend, FieldSet } from "@/components/ui/field";
@@ -11,9 +15,9 @@ export default function ArrayObjectField({
   name,
   schema,
   value: arrayValue,
-  onChange,
   status = "known",
 }: SchemaFieldProps) {
+  const { onChange } = useSchemaForm();
   const itemProperties = schema.items.properties;
 
   return (
@@ -86,25 +90,28 @@ export default function ArrayObjectField({
               </Button>
             </div>
 
-            <FieldGroup className="px-3 py-3 gap-3">
-              {Object.entries(itemProperties).map(
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                ([propKey, propSchema]: [string, any]) => (
-                  <SchemaField
-                    key={propKey}
-                    name={propKey}
-                    schema={propSchema}
-                    value={(item || {})[propKey]}
-                    onChange={(k, v) => {
-                      const newArr = [...arrayValue];
-                      newArr[idx] = { ...(newArr[idx] || {}), [k]: v };
-                      onChange(name, newArr);
-                    }}
-                    status="known"
-                  />
-                ),
-              )}
-            </FieldGroup>
+            <SchemaFormProvider
+              onChange={(k, v) => {
+                const newArr = [...arrayValue];
+                newArr[idx] = { ...(newArr[idx] || {}), [k]: v };
+                onChange(name, newArr);
+              }}
+            >
+              <FieldGroup className="px-3 py-3 gap-3">
+                {Object.entries(itemProperties).map(
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  ([propKey, propSchema]: [string, any]) => (
+                    <SchemaField
+                      key={propKey}
+                      name={propKey}
+                      schema={propSchema}
+                      value={(item || {})[propKey]}
+                      status="known"
+                    />
+                  ),
+                )}
+              </FieldGroup>
+            </SchemaFormProvider>
           </div>
         ))}
       </div>

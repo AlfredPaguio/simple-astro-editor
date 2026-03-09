@@ -2,6 +2,10 @@ import { FieldTypeIcon } from "@/components/schema-form/FieldTypeIcon";
 import SchemaField, {
   type SchemaFieldProps,
 } from "@/components/schema-form/SchemaField";
+import {
+  SchemaFormProvider,
+  useSchemaForm,
+} from "@/components/schema-form/SchemaFormContext";
 import { Badge } from "@/components/ui/badge";
 import { FieldGroup, FieldLegend, FieldSet } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
@@ -10,9 +14,9 @@ function NestedObjectField({
   name,
   schema,
   value,
-  onChange,
   status = "known",
 }: SchemaFieldProps) {
+  const { onChange } = useSchemaForm();
   const objectValue = value || {};
 
   return (
@@ -41,23 +45,24 @@ function NestedObjectField({
           </Badge>
         )}
       </FieldLegend>
-      <FieldGroup className="px-3 py-3 gap-3 bg-muted/10">
-        {Object.entries(schema.properties).map(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ([propKey, propSchema]: [string, any]) => (
-            <SchemaField
-              key={propKey}
-              name={propKey}
-              schema={propSchema}
-              value={objectValue[propKey]}
-              onChange={(k, v) => {
-                onChange(name, { ...objectValue, [k]: v });
-              }}
-              status="known"
-            />
-          ),
-        )}
-      </FieldGroup>
+      <SchemaFormProvider
+        onChange={(k, v) => onChange(name, { ...objectValue, [k]: v })}
+      >
+        <FieldGroup className="px-3 py-3 gap-3 bg-muted/10">
+          {Object.entries(schema.properties).map(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ([propKey, propSchema]: [string, any]) => (
+              <SchemaField
+                key={propKey}
+                name={propKey}
+                schema={propSchema}
+                value={objectValue[propKey]}
+                status="known"
+              />
+            ),
+          )}
+        </FieldGroup>
+      </SchemaFormProvider>
     </FieldSet>
   );
 }

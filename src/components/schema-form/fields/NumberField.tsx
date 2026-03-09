@@ -1,5 +1,6 @@
 import FieldLabelContent from "@/components/schema-form/FieldLabelContent";
 import type { SchemaFieldProps } from "@/components/schema-form/SchemaField";
+import { useSchemaForm } from "@/components/schema-form/SchemaFormContext";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -7,10 +8,10 @@ import { cn } from "@/lib/utils";
 export default function NumberField({
   name,
   value,
-  onChange,
   schema,
   status = "known",
 }: SchemaFieldProps) {
+  const { onChange } = useSchemaForm();
   return (
     <Field
       className={cn(
@@ -18,7 +19,6 @@ export default function NumberField({
       )}
     >
       <FieldLabel htmlFor={`field-${name}`}>
-        {" "}
         <FieldLabelContent name={name} schema={schema} status={status} />
       </FieldLabel>
       <Input

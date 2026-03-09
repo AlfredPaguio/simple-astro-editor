@@ -1,5 +1,6 @@
 import FieldLabelContent from "@/components/schema-form/FieldLabelContent";
 import type { SchemaFieldProps } from "@/components/schema-form/SchemaField";
+import { useSchemaForm } from "@/components/schema-form/SchemaFormContext";
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -9,10 +10,11 @@ import { Plus, XIcon } from "lucide-react";
 export default function ArrayPrimitiveField({
   name,
   value: arrayValue,
-  onChange,
   schema,
   status = "known",
 }: SchemaFieldProps) {
+  const { onChange } = useSchemaForm();
+
   return (
     <Field
       className={cn(

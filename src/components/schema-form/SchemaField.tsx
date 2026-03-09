@@ -11,7 +11,6 @@ export interface SchemaFieldProps {
   name: string;
   schema: any;
   value: any;
-  onChange: (key: string, value: any) => void;
   status?: "known" | "inferred" | "unknown";
 }
 
@@ -19,7 +18,6 @@ function SchemaField({
   name,
   schema,
   value,
-  onChange,
   status = "known",
 }: SchemaFieldProps) {
   const type = schema?.type || "string";
@@ -28,9 +26,8 @@ function SchemaField({
 
   // Boolean Switch
   if (type === "boolean") {
-    <BooleanField
+    return <BooleanField
       name={name}
-      onChange={onChange}
       schema={schema}
       value={value}
       status={status}
@@ -42,7 +39,6 @@ function SchemaField({
     return (
       <NestedObjectField
         name={name}
-        onChange={onChange}
         schema={schema}
         value={value}
         status={status}
@@ -52,9 +48,8 @@ function SchemaField({
 
   // Array
   if (type === "array") {
-    <ArrayField
+    return <ArrayField
       name={name}
-      onChange={onChange}
       schema={schema}
       value={value}
       status={status}
@@ -63,10 +58,9 @@ function SchemaField({
 
   // Enum Selection
   if (enumOptions) {
-    <EnumField
+    return <EnumField
       enumOptions={enumOptions}
       name={name}
-      onChange={onChange}
       schema={schema}
       value={value}
       status={status}
@@ -75,9 +69,8 @@ function SchemaField({
 
   // Number Input
   if (type === "number") {
-    <NumberField
+    return <NumberField
       name={name}
-      onChange={onChange}
       schema={schema}
       value={value}
       status={status}
@@ -86,10 +79,9 @@ function SchemaField({
 
   // Date / DateTime
   if (format === "date" || format === "date-time") {
-    <DateField
+    return <DateField
       format={format}
       name={name}
-      onChange={onChange}
       schema={schema}
       value={value}
       status={status}
@@ -97,10 +89,9 @@ function SchemaField({
   }
 
   // Default: String Input
-  <StringField
+  return <StringField
     format={format}
     name={name}
-    onChange={onChange}
     schema={schema}
     value={value}
     status={status}

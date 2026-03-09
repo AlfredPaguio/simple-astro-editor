@@ -1,5 +1,6 @@
 import FieldLabelContent from "@/components/schema-form/FieldLabelContent";
 import type { SchemaFieldProps } from "@/components/schema-form/SchemaField";
+import { useSchemaForm } from "@/components/schema-form/SchemaFormContext";
 import { Field, FieldLabel } from "@/components/ui/field";
 import {
   Select,
@@ -18,11 +19,11 @@ export interface Props {
 export default function EnumField({
   name,
   value,
-  onChange,
   status = "known",
   schema,
   enumOptions,
 }: SchemaFieldProps & Props) {
+  const { onChange } = useSchemaForm();
   return (
     <Field
       className={cn(

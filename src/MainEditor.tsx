@@ -2,7 +2,7 @@ import MainEditorPanels from "@/_partials/MainEditorPanels";
 import { AppSidebar } from "@/components/app-sidebar";
 import FileSystemAccessAlert from "@/components/FileSystemAccessAlert";
 import { ModeToggle } from "@/components/mode-toggle";
-import { SchemaForm } from "@/components/SchemaForm";
+import { SchemaForm } from "@/components/schema-form/SchemaForm";
 import {
   Accordion,
   AccordionContent,

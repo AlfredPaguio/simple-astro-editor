@@ -153,9 +153,14 @@ export default function MainEditor() {
   };
 
   const currentSchema = schemas.find((s) => s.name === selectedCollection);
-  const analysis = currentSchema
-    ? analyzeFields(frontmatter, currentSchema.jsonSchema.properties || {})
-    : { known: [], inferred: [], unknown: [] };
+
+  const analysis = analyzeFields(
+    frontmatter,
+    currentSchema?.jsonSchema?.properties ?? {},
+  );
+
+  const hasFrontmatterContent =
+    Object.keys(frontmatter).length > 0 || currentSchema !== undefined;
 
   const fileTree = buildFileTree(files);
   sortTree(fileTree);
@@ -329,7 +334,7 @@ export default function MainEditor() {
                   </div>
                 )}
 
-                {currentSchema && (
+                {hasFrontmatterContent && (
                   <Accordion defaultValue={["frontmatter"]}>
                     <AccordionItem
                       value="frontmatter"
@@ -341,18 +346,35 @@ export default function MainEditor() {
                           <span className="text-sm font-medium">
                             Frontmatter
                           </span>
-                          <Badge
-                            variant="secondary"
-                            className="text-xs font-normal ml-1"
-                          >
-                            {analysis.known.length} fields
-                          </Badge>
+                          {currentSchema ? (
+                            <Badge
+                              variant="secondary"
+                              className="text-xs font-normal ml-1"
+                            >
+                              {analysis.known.length} fields
+                            </Badge>
+                          ) : (
+                            <Badge
+                              variant="outline"
+                              className="text-xs font-normal ml-1 border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-400"
+                            >
+                              inferred only
+                            </Badge>
+                          )}
+                          {analysis.inferred.length > 0 && currentSchema && (
+                            <Badge
+                              variant="outline"
+                              className="text-xs font-normal border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-400"
+                            >
+                              {analysis.inferred.length} inferred
+                            </Badge>
+                          )}
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="px-4 pb-4">
                         <SchemaForm
                           key={schemaFormKey}
-                          properties={currentSchema.jsonSchema.properties || {}}
+                          properties={currentSchema?.jsonSchema.properties || {}}
                           values={frontmatter}
                           inferredFields={analysis.inferred}
                           unknownFields={analysis.unknown}

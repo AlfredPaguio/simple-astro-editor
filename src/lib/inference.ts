@@ -52,6 +52,8 @@ function inferTypeFromValue(value: any): string {
   if (value === null || value === undefined) return "string";
   if (typeof value === "boolean") return "boolean";
   if (typeof value === "number") return "number";
+  // gray-matter parses YAML bare dates (e.g. 2024-01-15) as JS Date instances.
+  if (value instanceof Date) return "date";
   if (typeof value === "string") {
     // Check for date patterns
     if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return "date";
@@ -64,6 +66,15 @@ function inferTypeFromValue(value: any): string {
   if (Array.isArray(value)) return "array";
   if (typeof value === "object") return "object";
   return "string";
+}
+
+function inferObjectSchema(value: Record<string, any>): any {
+  const properties: Record<string, any> = {};
+  for (const [k, v] of Object.entries(value)) {
+    const t = inferTypeFromValue(v);
+    properties[k] = schemaFromType(t, v);
+  }
+  return { type: "object", properties };
 }
 
 function schemaFromType(type: string, value: any): any {
@@ -80,10 +91,29 @@ function schemaFromType(type: string, value: any): any {
       return { type: "string", format: "email" };
     case "url":
       return { type: "string", format: "uri" };
-    case "array":
-      { const itemType =
-        value.length > 0 ? inferTypeFromValue(value[0]) : "string";
-      return { type: "array", items: schemaFromType(itemType, value[0]) }; }
+    case "object":
+      return value && typeof value === "object" && !Array.isArray(value)
+        ? inferObjectSchema(value)
+        : { type: "object", properties: {} };
+    case "array": {
+      if (!Array.isArray(value) || value.length === 0) {
+        return { type: "array", items: { type: "string" } };
+      }
+      const firstItem = value[0];
+      const itemType = inferTypeFromValue(firstItem);
+      // Array of objects — infer properties from first item
+      if (itemType === "object" && firstItem && typeof firstItem === "object") {
+        // Merge keys from all items so partial objects don't hide properties
+        const merged: Record<string, any> = {};
+        for (const item of value) {
+          if (item && typeof item === "object") {
+            Object.assign(merged, item);
+          }
+        }
+        return { type: "array", items: inferObjectSchema(merged) };
+      }
+      return { type: "array", items: schemaFromType(itemType, firstItem) };
+    }
     default:
       return { type: "string" };
   }

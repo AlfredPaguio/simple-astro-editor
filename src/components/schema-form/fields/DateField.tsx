@@ -10,6 +10,18 @@ interface Props {
   format: any;
 }
 
+function normalizeDate(value: any, format: string): string {
+  if (!value) return "";
+  // gray-matter parses bare YAML dates as JS Date instances
+  if (value instanceof Date) {
+    if (format === "date") {
+      return value.toISOString().slice(0, 10); // "YYYY-MM-DD"
+    }
+    return value.toISOString().slice(0, 16); // "YYYY-MM-DDTHH:MM"
+  }
+  return String(value);
+}
+
 export default function DateField({
   name,
   value,
@@ -30,9 +42,9 @@ export default function DateField({
       <Input
         id={`field-${name}`}
         type={format === "date" ? "date" : "datetime-local"}
-        value={value || ""}
+        value={normalizeDate(value, format)}
         onChange={(e) => onChange(name, e.target.value)}
-        className="h-8 text-sm w-full"
+        className="h-8 text-sm w-full mt-1.5"
       />
     </Field>
   );

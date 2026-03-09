@@ -31,7 +31,6 @@ export default function EnumField({
       )}
     >
       <FieldLabel htmlFor={`field-${name}`}>
-        {" "}
         <FieldLabelContent name={name} schema={schema} status={status} />
       </FieldLabel>
       <Select value={value || ""} onValueChange={(v) => onChange(name, v)}>

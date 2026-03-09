@@ -3,8 +3,15 @@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Field,
+  FieldContent,
+  FieldGroup,
+  FieldLabel,
+  FieldLegend,
+  FieldSet,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -49,19 +56,22 @@ export function SchemaForm({
   const hasKnownFields = Object.keys(properties).length > 0;
 
   return (
-    <div className="space-y-6">
+    <div className="divide-y divide-border">
       {/* Known fields from Zod schema */}
-      {hasKnownFields &&
-        Object.entries(properties).map(([key, schema]: [string, any]) => (
-          <CustomFormField
-            key={key}
-            name={key}
-            schema={schema}
-            value={values[key]}
-            onChange={onChange}
-            status={unknownFields.includes(key) ? "unknown" : "known"}
-          />
-        ))}
+      {hasKnownFields && (
+        <FieldGroup className="px-3 py-3 gap-3">
+          {Object.entries(properties).map(([key, schema]: [string, any]) => (
+            <SchemaField
+              key={key}
+              name={key}
+              schema={schema}
+              value={values[key]}
+              onChange={onChange}
+              status={unknownFields.includes(key) ? "unknown" : "known"}
+            />
+          ))}
+        </FieldGroup>
+      )}
 
       {/* Inferred fields section */}
       {inferredFields.length > 0 && (
@@ -73,7 +83,8 @@ export function SchemaForm({
         >
           <AlertTitle className="text-yellow-800 dark:text-yellow-200 flex items-center gap-2 px-3 py-2.5 bg-amber-50 dark:bg-amber-950/40 border-b border-amber-200 dark:border-amber-800/50">
             <AlertTriangle className="h-4 w-4 text-yellow-600" />
-            Inferred Fields
+            Inferred Fields - Found in frontmatter but not defined in
+            content.config.ts
             <Badge
               variant="outline"
               className="ml-auto text-[10px] h-4 px-1.5 border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-400 font-normal"
@@ -82,10 +93,9 @@ export function SchemaForm({
             </Badge>
           </AlertTitle>
           <AlertDescription className="divide-y divide-border text-yellow-700 dark:text-yellow-300">
-            Found in frontmatter but not defined in content.config.ts
-            <div className="space-y-4 pt-4">
+            <FieldGroup className="px-3 py-3 gap-3">
               {inferredFields.map((field) => (
-                <CustomFormField
+                <SchemaField
                   key={field.key}
                   name={field.key}
                   schema={field.inferredSchema}
@@ -94,7 +104,7 @@ export function SchemaForm({
                   status="inferred"
                 />
               ))}
-            </div>
+            </FieldGroup>
           </AlertDescription>
         </Alert>
       )}
@@ -102,7 +112,7 @@ export function SchemaForm({
   );
 }
 
-interface FormFieldProps {
+interface SchemaFieldProps {
   name: string;
   schema: any;
   value: any;
@@ -113,142 +123,103 @@ interface FormFieldProps {
 function FieldTypeIcon({ schema }: { schema: any }) {
   const type = schema?.type || "string";
   const format = schema?.format;
-  const iconClass = "h-3 w-3 shrink-0";
+  const cls = "h-3 w-3 shrink-0 text-muted-foreground/50";
 
-  if (schema?.enum) return <ListIcon className={iconClass} />;
-  if (type === "boolean") return <BinaryIcon className={iconClass} />;
-  if (type === "number") return <HashIcon className={iconClass} />;
-  if (type === "array") return <ShapesIcon className={iconClass} />;
-  if (type === "object") return <ShapesIcon className={iconClass} />;
+  if (schema?.enum) return <ListIcon className={cls} />;
+  if (type === "boolean") return <BinaryIcon className={cls} />;
+  if (type === "number") return <HashIcon className={cls} />;
+  if (type === "array" || type === "object")
+    return <ShapesIcon className={cls} />;
   if (format === "date" || format === "date-time")
-    return <CalendarDaysIcon className={iconClass} />;
-  if (format === "email") return <MailIcon className={iconClass} />;
-  if (format === "uri") return <LinkIcon className={iconClass} />;
-  if (type === "string") return <TypeIcon className={iconClass} />;
-  return <TextIcon className={iconClass} />;
+    return <CalendarDaysIcon className={cls} />;
+  if (format === "email") return <MailIcon className={cls} />;
+  if (format === "uri") return <LinkIcon className={cls} />;
+  if (type === "string") return <TypeIcon className={cls} />;
+  return <TextIcon className={cls} />;
 }
 
-function CustomFieldLabel({
+function SchemaField({
   name,
   schema,
-  status,
-}: {
-  name: string;
-  schema: any;
-  status: "known" | "inferred" | "unknown";
-}) {
-  return (
-    <div className="flex items-center gap-1.5 mb-1.5">
-      <span className="text-muted-foreground/60">
-        <FieldTypeIcon schema={schema} />
-      </span>
-      <Label className="text-sm font-medium leading-none">{name}</Label>
+  value,
+  onChange,
+  status = "known",
+}: SchemaFieldProps) {
+  const type = schema?.type || "string";
+  const format = schema?.format;
+  const enumOptions = schema?.enum;
+
+  const labelContent = (
+    <div className="flex items-center gap-1.5">
+      <FieldTypeIcon schema={schema} />
+      <span>{name}</span>
       {status === "inferred" && (
         <Badge
           variant="outline"
-          className="text-[10px] h-4 px-1.5 ml-auto border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-400 font-normal"
+          className="text-[10px] h-4 px-1.5 ml-1 border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-400 font-normal"
         >
           inferred
         </Badge>
       )}
     </div>
   );
-}
 
-function CustomFormField({
-  name,
-  schema,
-  value,
-  onChange,
-  status = "known",
-}: FormFieldProps) {
-  const type = schema.type || "string";
-  const format = schema.format;
-  const enumOptions = schema.enum;
-
-  // Helper for Input wrapper styles based on status
-  const inputWrapperClass = cn(
-    "px-3 py-2.5",
-    status === "inferred" && "bg-amber-50/40 dark:bg-amber-950/20",
-  );
-
-  // 1. Enum Selection
-  if (enumOptions) {
-    return (
-      <div className={inputWrapperClass}>
-        <CustomFieldLabel name={name} schema={schema} status={status} />
-        <Select value={value || ""} onValueChange={(v) => onChange(name, v)}>
-          <SelectTrigger className="h-8 text-sm">
-            <SelectValue placeholder="Select an option..." />
-          </SelectTrigger>
-          <SelectContent>
-            {enumOptions.map((opt: any) => (
-              <SelectItem key={opt} value={opt} className="text-sm">
-                {opt}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-    );
-  }
-
-  // 2. Boolean Switch
+  // Boolean Switch
   if (type === "boolean") {
     return (
-      <div
-        className={cn(inputWrapperClass, "flex items-center justify-between")}
+      <Field
+        orientation="horizontal"
+        className={cn(
+          status === "inferred" &&
+            "bg-amber-50/30 dark:bg-amber-950/10 -mx-3 px-3 py-1 rounded-none",
+        )}
       >
-        <CustomFieldLabel name={name} schema={schema} status={status} />
         <Switch
+          id={`field-${name}`}
           checked={value || false}
           onCheckedChange={(v) => onChange(name, v)}
           className="ml-4 shrink-0"
         />
-      </div>
+        <FieldContent>
+          <FieldLabel htmlFor={`field-${name}`}>{labelContent}</FieldLabel>
+        </FieldContent>
+      </Field>
     );
   }
 
-  // 3. Number Input
-  if (type === "number") {
-    return (
-      <div className={inputWrapperClass}>
-        <CustomFieldLabel name={name} schema={schema} status={status} />
-        <Input
-          type="number"
-          value={value || ""}
-          onChange={(e) => onChange(name, e.target.valueAsNumber)}
-          className="h-8 text-sm"
-        />
-      </div>
-    );
-  }
-
-  // 4. Date / DateTime
-  if (type === "string" && (format === "date" || format === "date-time")) {
-    return (
-      <div className={inputWrapperClass}>
-        <CustomFieldLabel name={name} schema={schema} status={status} />
-        <Input
-          type={format === "date" ? "date" : "datetime-local"}
-          value={value || ""}
-          onChange={(e) => onChange(name, e.target.value)}
-          className="h-8 text-sm w-full"
-        />
-      </div>
-    );
-  }
-
-  // 5. Nested Object
+  // Nested Object
   if (type === "object" && schema.properties) {
     const objectValue = value || {};
     return (
-      <div className={inputWrapperClass}>
-        <CustomFieldLabel name={name} schema={schema} status={status} />
-        <div className="rounded-md border bg-muted/20 overflow-hidden divide-y divide-border">
+      <FieldSet
+        className={cn(
+          "gap-0 rounded-md border overflow-hidden",
+          status === "inferred" && "border-amber-200 dark:border-amber-800/50",
+        )}
+      >
+        <FieldLegend
+          variant="label"
+          className={cn(
+            "px-3 py-2 border-b bg-muted/30 text-xs font-semibold flex items-center gap-1.5",
+            status === "inferred" &&
+              "bg-amber-50/50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800/50",
+          )}
+        >
+          <FieldTypeIcon schema={schema} />
+          {name}
+          {status === "inferred" && (
+            <Badge
+              variant="outline"
+              className="text-[10px] h-4 px-1.5 ml-1 border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-400 font-normal"
+            >
+              inferred
+            </Badge>
+          )}
+        </FieldLegend>
+        <FieldGroup className="px-3 py-3 gap-3 bg-muted/10">
           {Object.entries(schema.properties).map(
             ([propKey, propSchema]: [string, any]) => (
-              <CustomFormField
+              <SchemaField
                 key={propKey}
                 name={propKey}
                 schema={propSchema}
@@ -260,63 +231,93 @@ function CustomFormField({
               />
             ),
           )}
-        </div>
-      </div>
+        </FieldGroup>
+      </FieldSet>
     );
   }
 
-  // 6. Array
+  // Array
   if (type === "array") {
     const arrayValue = Array.isArray(value) ? value : [];
+    const isObjectArray =
+      schema.items?.type === "object" && schema.items?.properties;
 
-    // 6a. Array of Objects
-    if (schema.items?.type === "object" && schema.items.properties) {
+    // a. Array of Objects
+    if (isObjectArray) {
       const itemProperties = schema.items.properties;
       return (
-        <div className={inputWrapperClass}>
-          <div className="flex items-center justify-between mb-2">
-            <CustomFieldLabel name={name} schema={schema} status={status} />
+        <FieldSet
+          className={cn(
+            "gap-0 rounded-md border overflow-hidden",
+            status === "inferred" &&
+              "border-amber-200 dark:border-amber-800/50",
+          )}
+        >
+          <div
+            className={cn(
+              "flex items-center justify-between px-3 py-2 border-b bg-muted/30",
+              status === "inferred" &&
+                "bg-amber-50/50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800/50",
+            )}
+          >
+            <FieldLegend
+              variant="label"
+              className="text-xs font-semibold flex items-center gap-1.5 m-0"
+            >
+              <FieldTypeIcon schema={schema} />
+              {name}
+              {status === "inferred" && (
+                <Badge
+                  variant="outline"
+                  className="text-[10px] h-4 px-1.5 ml-1 border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-400 font-normal"
+                >
+                  inferred
+                </Badge>
+              )}
+            </FieldLegend>
             <Button
               variant="outline"
               size="sm"
+              className="h-6 text-xs px-2 gap-1"
               onClick={() => onChange(name, [...arrayValue, {}])}
             >
-              <Plus className="size-4 mr-1" /> Add Item
+              <Plus className="size-3" />
+              Add
             </Button>
           </div>
 
-          <div className="space-y-2">
+          <div className="divide-y divide-border bg-muted/10">
             {arrayValue.length === 0 && (
               <p className="text-sm text-muted-foreground text-center py-2">
                 No items yet.
               </p>
             )}
+
             {arrayValue.map((item: any, idx: number) => (
-              <div
-                key={idx}
-                className="rounded-md border bg-muted/20 overflow-hidden"
-              >
-                <div className="flex items-center justify-between px-3 py-1.5 border-b bg-muted/30">
-                  <span className="text-xs font-mono text-muted-foreground">
-                    Item #{idx + 1}
+              <div key={idx}>
+                <div className="flex items-center justify-between px-3 py-1.5 bg-muted/20 border-b">
+                  <span className="text-[10px] font-mono text-muted-foreground">
+                    Item {idx + 1}
                   </span>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 text-destructive hover:text-destructive hover:bg-destructive/10"
-                    onClick={() => {
-                      const newArr = arrayValue.filter((_, i) => i !== idx);
-                      onChange(name, newArr);
-                    }}
+                    className="h-5 w-5 text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={() =>
+                      onChange(
+                        name,
+                        arrayValue.filter((_: any, i: number) => i !== idx),
+                      )
+                    }
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <Trash2 className="h-3 w-3" />
                   </Button>
                 </div>
 
-                <div className="divide-y divide-border space-y-2">
+                <FieldGroup className="px-3 py-3 gap-3">
                   {Object.entries(itemProperties).map(
                     ([propKey, propSchema]: [string, any]) => (
-                      <CustomFormField
+                      <SchemaField
                         key={propKey}
                         name={propKey}
                         schema={propSchema}
@@ -330,23 +331,25 @@ function CustomFormField({
                       />
                     ),
                   )}
-                </div>
+                </FieldGroup>
               </div>
             ))}
           </div>
-        </div>
+        </FieldSet>
       );
     }
 
-    // 6b. Simple Array (Strings/Numbers)
+    // b. Simple Array (Strings/Numbers)
     return (
-      <div className={inputWrapperClass}>
-        <div className="flex items-center justify-between mb-2">
-          <CustomFieldLabel name={name} schema={schema} status={status} />
-        </div>
-        <div className="space-y-2">
+      <Field
+        className={cn(
+          status === "inferred" && "bg-amber-50/30 dark:bg-amber-950/10",
+        )}
+      >
+        <FieldLabel>{labelContent}</FieldLabel>
+        <div className="space-y-1.5 mt-1.5">
           {arrayValue.map((item: any, idx: number) => (
-            <div key={idx} className="flex gap-2 items-center">
+            <div key={idx} className="flex gap-1.5 items-center">
               <Input
                 value={item}
                 onChange={(e) => {
@@ -359,7 +362,7 @@ function CustomFormField({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0"
+                className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0"
                 onClick={() => {
                   const newArr = arrayValue.filter(
                     (_: any, i: number) => i !== idx,
@@ -367,7 +370,7 @@ function CustomFormField({
                   onChange(name, newArr);
                 }}
               >
-                <X className="h-4 w-4" />
+                <X className="h-3.5 w-3.5" />
               </Button>
             </div>
           ))}
@@ -377,18 +380,88 @@ function CustomFormField({
             className="w-full h-7 text-xs gap-1 border-dashed"
             onClick={() => onChange(name, [...arrayValue, ""])}
           >
-            <Plus className="h-3.5 w-3.5 mr-2" /> Add Item
+            <Plus className="size-3" /> Add Item
           </Button>
         </div>
-      </div>
+      </Field>
     );
   }
 
-  // 7. Default: String Input
+  // Enum Selection
+  if (enumOptions) {
+    return (
+      <Field
+        className={cn(
+          status === "inferred" && "bg-amber-50/30 dark:bg-amber-950/10",
+        )}
+      >
+        <FieldLabel htmlFor={`field-${name}`}>{labelContent}</FieldLabel>
+        <Select value={value || ""} onValueChange={(v) => onChange(name, v)}>
+          <SelectTrigger id={`field-${name}`} className="h-8 text-sm">
+            <SelectValue placeholder="Select an option..." />
+          </SelectTrigger>
+          <SelectContent>
+            {enumOptions.map((opt: any) => (
+              <SelectItem key={opt} value={opt} className="text-sm">
+                {opt}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </Field>
+    );
+  }
+
+  // Number Input
+  if (type === "number") {
+    return (
+      <Field
+        className={cn(
+          status === "inferred" && "bg-amber-50/30 dark:bg-amber-950/10",
+        )}
+      >
+        <FieldLabel htmlFor={`field-${name}`}>{labelContent}</FieldLabel>
+        <Input
+          id={`field-${name}`}
+          type="number"
+          value={value || ""}
+          onChange={(e) => onChange(name, e.target.valueAsNumber)}
+          className="h-8 text-sm"
+        />
+      </Field>
+    );
+  }
+
+  // Date / DateTime
+  if (format === "date" || format === "date-time") {
+    return (
+      <Field
+        className={cn(
+          status === "inferred" && "bg-amber-50/30 dark:bg-amber-950/10",
+        )}
+      >
+        <FieldLabel htmlFor={`field-${name}`}>{labelContent}</FieldLabel>
+        <Input
+          id={`field-${name}`}
+          type={format === "date" ? "date" : "datetime-local"}
+          value={value || ""}
+          onChange={(e) => onChange(name, e.target.value)}
+          className="h-8 text-sm w-full"
+        />
+      </Field>
+    );
+  }
+
+  // Default: String Input
   return (
-    <div className={inputWrapperClass}>
-      <CustomFieldLabel name={name} schema={schema} status={status} />
+    <Field
+      className={cn(
+        status === "inferred" && "bg-amber-50/30 dark:bg-amber-950/10",
+      )}
+    >
+      <FieldLabel htmlFor={`field-${name}`}>{labelContent}</FieldLabel>
       <Input
+        id={`field-${name}`}
         type={format === "email" ? "email" : format === "uri" ? "url" : "text"}
         value={value || ""}
         onChange={(e) => onChange(name, e.target.value)}
@@ -399,8 +472,8 @@ function CustomFormField({
               ? "https://"
               : undefined
         }
-        className="h-8 text-sm"
+        className="h-8 text-sm mt-1.5"
       />
-    </div>
+    </Field>
   );
 }

@@ -1,7 +1,12 @@
 import MainEditorPanels from "@/_partials/MainEditorPanels";
 import { FileSidebar } from "@/components/file-sidebar";
 import FileSystemAccessAlert from "@/components/FileSystemAccessAlert";
+import { FrontmatterSidebar } from "@/components/frontmatter-sidebar";
 import { SchemaForm } from "@/components/schema-form/SchemaForm";
+import {
+  SidebarManager,
+  SidebarManagerProvider,
+} from "@/components/sidebar-manager";
 import SiteHeader from "@/components/site-header";
 import {
   Accordion,
@@ -154,159 +159,182 @@ export default function MainEditor() {
 
   return (
     <div className="[--header-height:calc(--spacing(14))]">
-      <SidebarProvider className="flex flex-col">
-        <SiteHeader
-          handleDownload={handleDownload}
-          handleLoadConfig={handleLoadConfig}
-          handleLoadContentFolder={handleLoadContentFolder}
-          handleSave={handleSave}
-          loading={loading}
-          selectedFile={selectedFile}
-        />
-
-        <div className="flex flex-1">
-          <FileSidebar
-            collections={schemas}
-            fileTree={fileTree}
-            selectedCollection={selectedCollection}
+      <SidebarManagerProvider>
+        <SidebarProvider className="flex flex-col" defaultOpen={true}>
+          <SiteHeader
+            handleDownload={handleDownload}
+            handleLoadConfig={handleLoadConfig}
+            handleLoadContentFolder={handleLoadContentFolder}
+            handleSave={handleSave}
+            loading={loading}
             selectedFile={selectedFile}
-            onSelectCollection={setSelectedCollection}
-            onSelectFile={handleOpenFile}
           />
-          <SidebarInset>
-            {error && (
-              <div className="px-4 pt-3">
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Error</AlertTitle>
-                  <AlertDescription className="flex justify-between items-center w-full">
-                    <span>{error}</span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 ml-4 shrink-0"
-                      onClick={() => setError(null)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </AlertDescription>
-                </Alert>
-              </div>
-            )}
 
-            <FileSystemAccessAlert />
+          <div className="flex flex-1">
+            <SidebarManager name="left">
+              <FileSidebar
+                collections={schemas}
+                fileTree={fileTree}
+                selectedCollection={selectedCollection}
+                selectedFile={selectedFile}
+                onSelectCollection={setSelectedCollection}
+                onSelectFile={handleOpenFile}
+              />
+            </SidebarManager>
 
-            <main className="flex-1 overflow-hidden flex flex-col lg:flex-row">
-              <section className="flex-1 overflow-y-auto h-full pt-4 pb-6 px-4 md:px-6">
-                <div className="space-y-5">
-                  {(selectedCollection || selectedFile) && (
-                    <div className="flex flex-wrap items-center gap-3 px-4 py-2.5 bg-muted/40 rounded-lg border">
-                      {selectedCollection && (
-                        <div className="flex items-center gap-2">
-                          <Layers className="h-3.5 w-3.5 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground">
-                            Collection
-                          </span>
-                          <Badge
-                            variant="secondary"
-                            className="font-mono text-xs font-medium"
-                          >
-                            {selectedCollection}
-                          </Badge>
-                        </div>
-                      )}
-                      {selectedCollection && selectedFile && (
-                        <Separator orientation="vertical" className="h-4" />
-                      )}
-                      {selectedFile ? (
-                        <div className="flex items-center gap-2">
-                          <FileText className="h-3.5 w-3.5 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground">
-                            File
-                          </span>
-                          <Badge
-                            variant="secondary"
-                            className="font-mono text-xs font-medium"
-                          >
-                            {selectedFile.name}
-                          </Badge>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <FilePlusCornerIcon className="h-3.5 w-3.5 text-muted-foreground" />
-                          <Badge
-                            variant="outline"
-                            className="font-mono text-xs"
-                          >
-                            New File
-                          </Badge>
-                        </div>
-                      )}
-                    </div>
-                  )}
+            <SidebarInset>
+              <SidebarProvider>
+                <SidebarInset>
+                  <main className="flex-1 overflow-hidden flex flex-col lg:flex-row">
+                    {error && (
+                      <div className="px-4 pt-3">
+                        <Alert variant="destructive">
+                          <AlertCircle className="h-4 w-4" />
+                          <AlertTitle>Error</AlertTitle>
+                          <AlertDescription className="flex justify-between items-center w-full">
+                            <span>{error}</span>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 ml-4 shrink-0"
+                              onClick={() => setError(null)}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </AlertDescription>
+                        </Alert>
+                      </div>
+                    )}
 
-                  {hasFrontmatterContent && (
-                    <Accordion defaultValue={["frontmatter"]}>
-                      <AccordionItem
-                        value="frontmatter"
-                        className="border rounded-lg"
-                      >
-                        <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                          <div className="flex items-center gap-2">
-                            <FileCode2 className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm font-medium">
-                              Frontmatter
-                            </span>
-                            {currentSchema ? (
-                              <Badge
-                                variant="secondary"
-                                className="text-xs font-normal ml-1"
-                              >
-                                {analysis.known.length} fields
-                              </Badge>
-                            ) : (
-                              <Badge
-                                variant="outline"
-                                className="text-xs font-normal ml-1 border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-400"
-                              >
-                                inferred only
-                              </Badge>
+                    <FileSystemAccessAlert />
+
+                    <section className="flex-1 overflow-y-auto h-full pt-4 pb-6 px-4 md:px-6">
+                      <div className="space-y-5">
+                        {(selectedCollection || selectedFile) && (
+                          <div className="flex flex-wrap items-center gap-3 px-4 py-2.5 bg-muted/40 rounded-lg border">
+                            {selectedCollection && (
+                              <div className="flex items-center gap-2">
+                                <Layers className="h-3.5 w-3.5 text-muted-foreground" />
+                                <span className="text-xs text-muted-foreground">
+                                  Collection
+                                </span>
+                                <Badge
+                                  variant="secondary"
+                                  className="font-mono text-xs font-medium"
+                                >
+                                  {selectedCollection}
+                                </Badge>
+                              </div>
                             )}
-                            {analysis.inferred.length > 0 && currentSchema && (
-                              <Badge
-                                variant="outline"
-                                className="text-xs font-normal border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-400"
-                              >
-                                {analysis.inferred.length} inferred
-                              </Badge>
+                            {selectedCollection && selectedFile && (
+                              <Separator
+                                orientation="vertical"
+                                className="h-4"
+                              />
+                            )}
+                            {selectedFile ? (
+                              <div className="flex items-center gap-2">
+                                <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+                                <span className="text-xs text-muted-foreground">
+                                  File
+                                </span>
+                                <Badge
+                                  variant="secondary"
+                                  className="font-mono text-xs font-medium"
+                                >
+                                  {selectedFile.name}
+                                </Badge>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <FilePlusCornerIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                                <Badge
+                                  variant="outline"
+                                  className="font-mono text-xs"
+                                >
+                                  New File
+                                </Badge>
+                              </div>
                             )}
                           </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="px-4 pb-4">
-                          <SchemaForm
-                            key={schemaFormKey}
-                            properties={
-                              currentSchema?.jsonSchema.properties || {}
-                            }
-                            values={frontmatter}
-                            inferredFields={analysis.inferred}
-                            unknownFields={analysis.unknown}
-                            onChange={handleFrontmatterChange}
-                          />
-                        </AccordionContent>
-                      </AccordionItem>
-                    </Accordion>
-                  )}
+                        )}
 
-                  <div className="space-y-4">
-                    <MainEditorPanels body={body} setBody={setBody} />
-                  </div>
-                </div>
-              </section>
-            </main>
-          </SidebarInset>
-        </div>
-      </SidebarProvider>
+                        {hasFrontmatterContent && (
+                          <Accordion defaultValue={["frontmatter"]}>
+                            <AccordionItem
+                              value="frontmatter"
+                              className="border rounded-lg"
+                            >
+                              <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                                <div className="flex items-center gap-2">
+                                  <FileCode2 className="h-4 w-4 text-muted-foreground" />
+                                  <span className="text-sm font-medium">
+                                    Frontmatter
+                                  </span>
+                                  {currentSchema ? (
+                                    <Badge
+                                      variant="secondary"
+                                      className="text-xs font-normal ml-1"
+                                    >
+                                      {analysis.known.length} fields
+                                    </Badge>
+                                  ) : (
+                                    <Badge
+                                      variant="outline"
+                                      className="text-xs font-normal ml-1 border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-400"
+                                    >
+                                      inferred only
+                                    </Badge>
+                                  )}
+                                  {analysis.inferred.length > 0 &&
+                                    currentSchema && (
+                                      <Badge
+                                        variant="outline"
+                                        className="text-xs font-normal border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-400"
+                                      >
+                                        {analysis.inferred.length} inferred
+                                      </Badge>
+                                    )}
+                                </div>
+                              </AccordionTrigger>
+                              <AccordionContent className="px-4 pb-4">
+                                <SchemaForm
+                                  key={schemaFormKey}
+                                  properties={
+                                    currentSchema?.jsonSchema.properties || {}
+                                  }
+                                  values={frontmatter}
+                                  inferredFields={analysis.inferred}
+                                  unknownFields={analysis.unknown}
+                                  onChange={handleFrontmatterChange}
+                                />
+                              </AccordionContent>
+                            </AccordionItem>
+                          </Accordion>
+                        )}
+
+                        <div className="space-y-4">
+                          <MainEditorPanels body={body} setBody={setBody} />
+                        </div>
+                      </div>
+                    </section>
+                  </main>
+                </SidebarInset>
+                <SidebarManager name="right">
+                  <FrontmatterSidebar
+                    currentSchema={currentSchema}
+                    frontmatter={frontmatter}
+                    inferredFields={analysis.inferred}
+                    unknownFields={analysis.unknown}
+                    schemaFormKey={schemaFormKey}
+                    onFieldChange={handleFrontmatterChange}
+                  />
+                </SidebarManager>
+              </SidebarProvider>
+            </SidebarInset>
+          </div>
+        </SidebarProvider>
+      </SidebarManagerProvider>
     </div>
   );
 }

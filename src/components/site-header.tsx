@@ -1,7 +1,7 @@
 import { ModeToggle } from "@/components/mode-toggle";
+import { useSidebarManager } from "@/components/sidebar-manager";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { useSidebar } from "@/components/ui/sidebar";
 import {
   Tooltip,
   TooltipContent,
@@ -13,6 +13,7 @@ import {
   FileCode2,
   FolderOpen,
   PanelLeftIcon,
+  PanelRightIcon,
   Save,
   Terminal,
 } from "lucide-react";
@@ -34,22 +35,23 @@ export default function SiteHeader({
   selectedFile,
   loading = false,
 }: Props) {
-  const { toggleSidebar } = useSidebar();
+  const manager = useSidebarManager();
+  const leftSidebar = manager.use("left");
+  const rightSidebar = manager.use("right");
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/95 supports-backdrop-filter:backdrop-blur supports-backdrop-filter:bg-background/60 px-4">
       <div className="flex h-(--header-height) items-center gap-2">
         {/* <SidebarTrigger className="-ml-1" /> */}
         <Button
-          data-sidebar="trigger"
-          data-slot="sidebar-trigger"
           variant="ghost"
           size="icon-sm"
-          onClick={toggleSidebar}
+          onClick={() => leftSidebar?.toggleSidebar()}
         >
           <PanelLeftIcon />
-          <span className="sr-only">Toggle Sidebar</span>
+          <span className="sr-only">Toggle File and Collection Sidebar</span>
         </Button>
+
         <Separator orientation="vertical" />
 
         <div className="flex items-center gap-2">
@@ -132,6 +134,15 @@ export default function SiteHeader({
 
           <ModeToggle />
         </div>
+
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={() => rightSidebar?.setOpen(false)}
+        >
+          <PanelRightIcon />
+          <span className="sr-only">Toggle Frontmatter Sidebar</span>
+        </Button>
       </div>
     </header>
   );

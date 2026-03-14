@@ -45,7 +45,7 @@ interface CollectionItem {
   name: string;
 }
 
-interface AppSidebarProps extends ComponentProps<typeof Sidebar> {
+interface FileSidebarProps extends ComponentProps<typeof Sidebar> {
   collections: CollectionItem[];
   fileTree: TreeNode[];
   selectedCollection?: string;
@@ -62,10 +62,12 @@ export function FileSidebar({
   onSelectCollection,
   onSelectFile,
   ...props
-}: AppSidebarProps) {
+}: FileSidebarProps) {
   return (
     <Sidebar
+      side="left"
       className="top-(--header-height) h-[calc(100svh-var(--header-height))]!"
+      variant="inset"
       {...props}
     >
       <SidebarHeader>
@@ -101,7 +103,7 @@ export function FileSidebar({
                   </SidebarMenuItem>
                 ))}
 
-              {collections.length > 0 && collections.length > 5 && (
+              {collections.length > 0 && collections.length >= 5 && (
                 <Combobox
                   items={collections}
                   itemToStringValue={(collection: CollectionItem) =>

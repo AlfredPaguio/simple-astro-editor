@@ -1,17 +1,14 @@
-import rehypeSanitize from "rehype-sanitize";
-import rehypeStringify from "rehype-stringify";
-import remarkParse from "remark-parse";
-import remarkRehype from "remark-rehype";
-import { unified } from "unified";
+import DOMPurify from "dompurify";
+
+import { marked } from "marked";
 
 // Browser-compatible markdown preview
 export async function renderMarkdown(md: string): Promise<string> {
-  const result = await unified()
-    .use(remarkParse, { fragment: true })
-    .use(remarkRehype)
-    .use(rehypeSanitize)
-    .use(rehypeStringify)
-    .process(md);
+  const dirty = await marked.parse(md);
 
-  return result.toString();
+  const result = DOMPurify.sanitize(dirty, {
+    USE_PROFILES: { html: true, mathMl: true, svg: true, svgFilters: true },
+  });
+
+  return result;
 }

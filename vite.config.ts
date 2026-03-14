@@ -14,9 +14,8 @@ export default defineConfig({
   optimizeDeps: {
     include: [
       "zod/v4",
-      "remark",
-      "remark-html",
-      "rehype-sanitize",
+      "marked",
+      "dompurify",
       "gray-matter",
     ],
     exclude: ["esbuild-wasm"], // Handle wasm separately

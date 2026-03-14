@@ -5,6 +5,7 @@ import { z } from "zod";
 // Mock astro:content for browser execution
 const ASTRO_CONTENT_MOCK = {
   defineCollection: (config: any) => config,
+  defineLiveCollection: (config: any) => config,
   defineConfig: (config: any) => config,
   z, // Astro re-exports Zod
   // reference: (config: any) => config,

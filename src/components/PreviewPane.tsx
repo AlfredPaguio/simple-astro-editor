@@ -99,7 +99,8 @@ export function PreviewPane({ markdown, className }: PreviewPaneProps) {
 
         {!loading && !error && html && (
           <div
-            className="prose max-w-none dark:prose bg-white overflow-hidden p-6 w-full"
+            className="prose max-w-full dark:prose bg-white p-6 w-full h-full contain-content overflow-auto"
+            style={{ width: "100%", maxWidth: "100%" }}
             dangerouslySetInnerHTML={{ __html: html }}
           />
         )}

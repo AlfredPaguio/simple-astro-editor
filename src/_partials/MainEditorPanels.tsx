@@ -1,33 +1,26 @@
+import PanelControls from "@/_partials/PanelControls";
 import { MarkdownEditor } from "@/components/MarkdownEditor";
 import { PreviewPane } from "@/components/PreviewPane";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
-    PANEL_H_DEFAULT,
-    ROW_HEIGHT,
-    useEditorLayout,
+  PANEL_H_DEFAULT,
+  ROW_HEIGHT,
+  useEditorLayout,
 } from "@/hooks/useEditorLayout";
 import {
-    ArrowDown,
-    ArrowLeft,
-    ArrowRight,
-    ArrowUp,
-    ChevronDown,
-    ChevronLeft,
-    ChevronRight,
-    ChevronUp,
-    Columns2,
-    Eye,
-    PanelLeftClose,
-    PanelRightClose,
-    RotateCcwIcon as ResetIcon,
-    SquareCode,
+  Columns2,
+  Eye,
+  PanelLeftClose,
+  PanelRightClose,
+  RotateCcwIcon as ResetIcon,
+  SquareCode,
 } from "lucide-react";
 import { GridLayout, horizontalCompactor } from "react-grid-layout";
 
@@ -37,145 +30,6 @@ import "react-resizable/css/styles.css";
 interface Props {
   body: string;
   setBody: (value: string) => void;
-}
-
-interface PanelControlsProps {
-  onMove: (dir: "left" | "right" | "up" | "down") => void;
-  onResize: (dir: "left" | "right" | "up" | "down") => void;
-}
-
-function PanelControls({ onMove, onResize }: PanelControlsProps) {
-  return (
-    <div className="flex items-center gap-0.5 flex-1 justify-center">
-      <div className="flex items-center gap-0.5">
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-5 w-5 text-muted-foreground hover:text-foreground"
-                onClick={() => onMove("up")}
-              >
-                <ArrowUp className="h-2.5 w-2.5" />
-              </Button>
-            }
-          />
-          <TooltipContent side="bottom">Move up</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-5 w-5 text-muted-foreground hover:text-foreground"
-                onClick={() => onMove("down")}
-              >
-                <ArrowDown className="h-2.5 w-2.5" />
-              </Button>
-            }
-          />
-          <TooltipContent side="bottom">Move down</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-5 w-5 text-muted-foreground hover:text-foreground"
-                onClick={() => onMove("left")}
-              >
-                <ArrowLeft className="h-2.5 w-2.5" />
-              </Button>
-            }
-          />
-          <TooltipContent side="bottom">Move left</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-5 w-5 text-muted-foreground hover:text-foreground"
-                onClick={() => onMove("right")}
-              >
-                <ArrowRight className="h-2.5 w-2.5" />
-              </Button>
-            }
-          />
-          <TooltipContent side="bottom">Move right</TooltipContent>
-        </Tooltip>
-      </div>
-
-      <Separator orientation="vertical" className="h-3 mx-1" />
-
-      <div className="flex items-center gap-0.5">
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-5 w-5 text-muted-foreground hover:text-foreground"
-                onClick={() => onResize("up")}
-              >
-                <ChevronUp className="h-2.5 w-2.5" />
-              </Button>
-            }
-          />
-          <TooltipContent side="bottom">Shrink height</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-5 w-5 text-muted-foreground hover:text-foreground"
-                onClick={() => onResize("down")}
-              >
-                <ChevronDown className="h-2.5 w-2.5" />
-              </Button>
-            }
-          />
-          <TooltipContent side="bottom">Expand height</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-5 w-5 text-muted-foreground hover:text-foreground"
-                onClick={() => onResize("left")}
-              >
-                <ChevronLeft className="h-2.5 w-2.5" />
-              </Button>
-            }
-          />
-          <TooltipContent side="bottom">Shrink width</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-5 w-5 text-muted-foreground hover:text-foreground"
-                onClick={() => onResize("right")}
-              >
-                <ChevronRight className="h-2.5 w-2.5" />
-              </Button>
-            }
-          />
-          <TooltipContent side="bottom">Expand width</TooltipContent>
-        </Tooltip>
-      </div>
-    </div>
-  );
 }
 
 export default function MainEditorPanels({ body, setBody }: Props) {
@@ -276,7 +130,10 @@ export default function MainEditorPanels({ body, setBody }: Props) {
             layout={visibleLayout}
             gridConfig={{ cols, rowHeight: ROW_HEIGHT }}
             dragConfig={{ enabled: true, handle: ".drag-handle" }}
-            resizeConfig={{ enabled: true, handles: ["se", "e", "s"] }}
+            resizeConfig={{
+              enabled: true,
+              handles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+            }}
             compactor={horizontalCompactor}
             onLayoutChange={(newLayout) =>
               onLayoutChange(newLayout as typeof visibleLayout)
@@ -284,7 +141,10 @@ export default function MainEditorPanels({ body, setBody }: Props) {
             style={{ minHeight: `${PANEL_H_DEFAULT * ROW_HEIGHT + 16}px` }}
           >
             {showEditor && (
-              <Card className="overflow-hidden flex flex-col" key="editor">
+              <Card
+                className="overflow-hidden flex flex-col gap-0"
+                key="editor"
+              >
                 <CardHeader className="py-1.5 px-3 border-b drag-handle cursor-grab active:cursor-grabbing select-none shrink-0">
                   <div className="flex items-center gap-1">
                     <CardTitle className="text-xs font-medium flex items-center gap-1.5 text-muted-foreground shrink-0">
@@ -325,7 +185,10 @@ export default function MainEditorPanels({ body, setBody }: Props) {
             )}
 
             {showPreview && (
-              <Card className="overflow-hidden flex flex-col" key="preview">
+              <Card
+                className="overflow-hidden flex flex-col gap-0"
+                key="preview"
+              >
                 <CardHeader className="py-1.5 px-3 border-b drag-handle cursor-grab active:cursor-grabbing select-none shrink-0">
                   <div className="flex items-center gap-1">
                     <CardTitle className="text-xs font-medium flex items-center gap-1.5 text-muted-foreground shrink-0">
@@ -355,7 +218,7 @@ export default function MainEditorPanels({ body, setBody }: Props) {
                     </Tooltip>
                   </div>
                 </CardHeader>
-                <CardContent className="p-0 flex-1 min-h-0 overflow-hidden">
+                <CardContent className="p-0 flex-1 min-h-0 overflow-hidden pt-0">
                   <PreviewPane markdown={body} className="h-full border-0" />
                 </CardContent>
               </Card>

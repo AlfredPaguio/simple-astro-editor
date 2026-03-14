@@ -1,11 +1,11 @@
 import {
   ChevronRight,
+  FilesIcon,
   FileText,
   Folder,
   FolderOpenIcon,
   Layers,
 } from "lucide-react";
-import * as React from "react";
 
 import {
   Collapsible,
@@ -27,6 +27,7 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -36,6 +37,7 @@ import {
 } from "@/components/ui/sidebar";
 import type { TreeNode } from "@/lib/file-tree-utils";
 import type { FileEntry } from "@/lib/fs-access";
+import { useState, type ComponentProps } from "react";
 
 type FileItem = FileEntry;
 
@@ -43,7 +45,7 @@ interface CollectionItem {
   name: string;
 }
 
-interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+interface AppSidebarProps extends ComponentProps<typeof Sidebar> {
   collections: CollectionItem[];
   fileTree: TreeNode[];
   selectedCollection?: string;
@@ -52,7 +54,7 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   onSelectFile: (file: FileItem) => void;
 }
 
-export function AppSidebar({
+export function FileSidebar({
   collections,
   fileTree,
   selectedCollection,
@@ -62,7 +64,22 @@ export function AppSidebar({
   ...props
 }: AppSidebarProps) {
   return (
-    <Sidebar {...props}>
+    <Sidebar
+      className="top-(--header-height) h-[calc(100svh-var(--header-height))]!"
+      {...props}
+    >
+      <SidebarHeader>
+        <SidebarMenu>
+          <SidebarMenuItem className="flex w-full items-center gap-2 p-2">
+            <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+              <FilesIcon className="size-4" />
+            </div>
+            <div className="grid flex-1 text-left text-sm leading-tight">
+              <span className="truncate font-medium">Files</span>
+            </div>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarHeader>
       <SidebarContent>
         {/* 1. Collections Group */}
         <SidebarGroup>
@@ -169,7 +186,7 @@ function TreeItem({
   onSelectFile: (file: FileEntry) => void;
 }) {
   const { setOpen, setOpenMobile, isMobile } = useSidebar();
-  const [isCollapsibleOpen, setIsCollapsibleOpen] = React.useState(false);
+  const [isCollapsibleOpen, setIsCollapsibleOpen] = useState(false);
 
   const handleSelect = (file: FileEntry) => {
     onSelectFile(file);

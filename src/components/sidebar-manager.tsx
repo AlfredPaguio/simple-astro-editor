@@ -14,6 +14,7 @@ import {
   useMemo,
   useRef,
   useState,
+  type ReactNode,
 } from "react";
 
 type SidebarContextProps = {
@@ -115,8 +116,12 @@ function SidebarManagerTrigger({
   name,
   className,
   onClick,
+  children,
   ...props
-}: React.ComponentProps<typeof Button> & { name: string }) {
+}: React.ComponentProps<typeof Button> & {
+  name: string;
+  children?: ReactNode;
+}) {
   const manager = useSidebarManager();
   const sidebar = manager.use(name);
 
@@ -135,8 +140,14 @@ function SidebarManagerTrigger({
       disabled={!sidebar}
       {...props}
     >
-      <PanelLeftIcon />
-      <span className="sr-only">Toggle {name} Sidebar</span>
+      {children ? (
+        children
+      ) : (
+        <>
+          <PanelLeftIcon />
+          <span className="sr-only">Toggle {name} Sidebar</span>
+        </>
+      )}
     </Button>
   );
 }

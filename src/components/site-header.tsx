@@ -1,5 +1,8 @@
 import { ModeToggle } from "@/components/mode-toggle";
-import { useSidebarManager } from "@/components/sidebar-manager";
+import {
+  SidebarManagerTrigger,
+  useSidebarManager,
+} from "@/components/sidebar-manager";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -35,22 +38,14 @@ export default function SiteHeader({
   selectedFile,
   loading = false,
 }: Props) {
-  const manager = useSidebarManager();
-  const leftSidebar = manager.use("left");
-  const rightSidebar = manager.use("right");
-
   return (
     <header className="sticky top-0 z-40 border-b bg-background/95 supports-backdrop-filter:backdrop-blur supports-backdrop-filter:bg-background/60 px-4">
       <div className="flex h-(--header-height) items-center gap-2">
         {/* <SidebarTrigger className="-ml-1" /> */}
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          onClick={() => leftSidebar?.toggleSidebar()}
-        >
+        <SidebarManagerTrigger name="left">
           <PanelLeftIcon />
           <span className="sr-only">Toggle File and Collection Sidebar</span>
-        </Button>
+        </SidebarManagerTrigger>
 
         <Separator orientation="vertical" />
 
@@ -135,14 +130,10 @@ export default function SiteHeader({
           <ModeToggle />
         </div>
 
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          onClick={() => rightSidebar?.setOpen(false)}
-        >
+        <SidebarManagerTrigger name="right">
           <PanelRightIcon />
           <span className="sr-only">Toggle Frontmatter Sidebar</span>
-        </Button>
+        </SidebarManagerTrigger>
       </div>
     </header>
   );

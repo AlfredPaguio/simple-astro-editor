@@ -2,18 +2,11 @@ import MainEditorPanels from "@/_partials/MainEditorPanels";
 import { FileSidebar } from "@/components/file-sidebar";
 import FileSystemAccessAlert from "@/components/FileSystemAccessAlert";
 import { FrontmatterSidebar } from "@/components/frontmatter-sidebar";
-import { SchemaForm } from "@/components/schema-form/SchemaForm";
 import {
   SidebarManager,
   SidebarManagerProvider,
 } from "@/components/sidebar-manager";
 import SiteHeader from "@/components/site-header";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,7 +29,6 @@ import {
 } from "@/lib/schema-evaluator";
 import {
   AlertCircle,
-  FileCode2,
   FilePlusCornerIcon,
   FileText,
   Layers,
@@ -151,9 +143,6 @@ export default function MainEditor() {
     currentSchema?.jsonSchema?.properties ?? {},
   );
 
-  const hasFrontmatterContent =
-    Object.keys(frontmatter).length > 0 || currentSchema !== undefined;
-
   const fileTree = buildFileTree(files);
   sortTree(fileTree);
 
@@ -183,7 +172,15 @@ export default function MainEditor() {
             </SidebarManager>
 
             <SidebarInset>
-              <SidebarProvider>
+              {/* for frontmatter sidebar */}
+              <SidebarProvider
+                style={
+                  {
+                    "--sidebar-width": "40rem",
+                    "--sidebar-width-mobile": "100vw",
+                  } as React.CSSProperties
+                }
+              >
                 <SidebarInset>
                   <main className="flex-1 overflow-hidden flex flex-col lg:flex-row">
                     {error && (
@@ -257,60 +254,6 @@ export default function MainEditor() {
                               </div>
                             )}
                           </div>
-                        )}
-
-                        {hasFrontmatterContent && (
-                          <Accordion defaultValue={["frontmatter"]}>
-                            <AccordionItem
-                              value="frontmatter"
-                              className="border rounded-lg"
-                            >
-                              <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                                <div className="flex items-center gap-2">
-                                  <FileCode2 className="h-4 w-4 text-muted-foreground" />
-                                  <span className="text-sm font-medium">
-                                    Frontmatter
-                                  </span>
-                                  {currentSchema ? (
-                                    <Badge
-                                      variant="secondary"
-                                      className="text-xs font-normal ml-1"
-                                    >
-                                      {analysis.known.length} fields
-                                    </Badge>
-                                  ) : (
-                                    <Badge
-                                      variant="outline"
-                                      className="text-xs font-normal ml-1 border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-400"
-                                    >
-                                      inferred only
-                                    </Badge>
-                                  )}
-                                  {analysis.inferred.length > 0 &&
-                                    currentSchema && (
-                                      <Badge
-                                        variant="outline"
-                                        className="text-xs font-normal border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-400"
-                                      >
-                                        {analysis.inferred.length} inferred
-                                      </Badge>
-                                    )}
-                                </div>
-                              </AccordionTrigger>
-                              <AccordionContent className="px-4 pb-4">
-                                <SchemaForm
-                                  key={schemaFormKey}
-                                  properties={
-                                    currentSchema?.jsonSchema.properties || {}
-                                  }
-                                  values={frontmatter}
-                                  inferredFields={analysis.inferred}
-                                  unknownFields={analysis.unknown}
-                                  onChange={handleFrontmatterChange}
-                                />
-                              </AccordionContent>
-                            </AccordionItem>
-                          </Accordion>
                         )}
 
                         <div className="space-y-4">

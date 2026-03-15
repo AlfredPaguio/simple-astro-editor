@@ -67,7 +67,7 @@ export function FileSidebar({
     <Sidebar
       side="left"
       className="top-(--header-height) h-[calc(100svh-var(--header-height))]!"
-      variant="inset"
+      variant="sidebar"
       {...props}
     >
       <SidebarHeader>

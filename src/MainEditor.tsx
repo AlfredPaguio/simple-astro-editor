@@ -52,10 +52,15 @@ export default function MainEditor() {
     setLoading(true);
     setError(null);
     try {
-      const file = await pickFile({
-        "text/typescript": [".ts"],
-        "text/javascript": [".js"],
-      });
+      const file = await pickFile([
+        {
+          description: "Config Files",
+          accept: {
+            "text/typescript": [".ts"],
+            "text/javascript": [".js"],
+          },
+        },
+      ]);
       if (!file) return;
 
       const text = await readFile(file.handle);

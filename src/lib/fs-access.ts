@@ -10,6 +10,16 @@ export interface DirectoryHandle {
   path: string;
 }
 
+// Human-readable descriptions for known MIME types shown in the file picker dialog.
+// Used as a fallback when a types entry has no description set.
+const MIME_DESCRIPTIONS: Partial<Record<string, string>> = {
+  "text/markdown": "Markdown Files",
+  "text/typescript": "TypeScript Files",
+  "text/javascript": "JavaScript Files",
+  "text/plain": "Text Files",
+  "application/json": "JSON Files",
+};
+
 export async function pickDirectory(): Promise<DirectoryHandle | null> {
   try {
     const handle = await window.showDirectoryPicker({
@@ -30,14 +40,30 @@ export async function pickDirectory(): Promise<DirectoryHandle | null> {
 }
 
 export async function pickFile(
-  acceptTypes: Record<`${string}/${string}`, `.${string}`[]> = {
-    "text/markdown": [".md", ".mdx"],
-    "text/typescript": [".ts"],
-  },
+  types: FilePickerOptions["types"] = [
+    {
+      description: "Markdown Files",
+      accept: { "text/markdown": [".md", ".mdx"] },
+    },
+    {
+      description: "TypeScript Files",
+      accept: { "text/typescript": [".ts"] },
+    },
+  ],
 ): Promise<FileEntry | null> {
   try {
+    // Fill in a description for any entry that didn't supply one,
+    // using the first MIME key in its accept record as a fallback lookup.
+    const resolvedTypes = types?.map((t) => ({
+      ...t,
+      description:
+        t.description ||
+        MIME_DESCRIPTIONS[Object.keys(t.accept ?? {})[0] ?? ""] ||
+        "Files",
+    }));
+
     const [handle] = await window.showOpenFilePicker({
-      types: [{ description: "Files", accept: acceptTypes }],
+      types: resolvedTypes,
       multiple: false,
     });
     const file = await handle.getFile();

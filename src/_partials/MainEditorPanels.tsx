@@ -51,7 +51,7 @@ export default function MainEditorPanels({ body, setBody }: Props) {
 
   return (
     <div className="flex flex-col gap-3 w-full">
-      <div className="flex items-center gap-1 p-1 rounded-lg bg-muted/50 border w-fit">
+      <div className="flex items-center gap-1 p-1 rounded-lg bg-muted/50 border w-fit self-center">
         <Tooltip>
           <TooltipTrigger
             render={

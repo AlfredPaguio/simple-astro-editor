@@ -38,7 +38,7 @@ export function FrontmatterSidebar({
     <Sidebar
       side="right"
       className="top-(--header-height) h-[calc(100svh-var(--header-height))]!"
-      variant="floating"
+      variant="sidebar"
       {...props}
     >
       <SidebarHeader>

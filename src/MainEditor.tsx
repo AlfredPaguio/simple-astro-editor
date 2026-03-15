@@ -160,125 +160,117 @@ export default function MainEditor() {
             selectedFile={selectedFile}
           />
 
-          <div className="flex flex-1">
-            <SidebarManager name="left">
-              <FileSidebar
-                collections={schemas}
-                fileTree={fileTree}
-                selectedCollection={selectedCollection}
-                selectedFile={selectedFile}
-                onSelectCollection={setSelectedCollection}
-                onSelectFile={handleOpenFile}
+          <SidebarManager name="left">
+            <FileSidebar
+              collections={schemas}
+              fileTree={fileTree}
+              selectedCollection={selectedCollection}
+              selectedFile={selectedFile}
+              onSelectCollection={setSelectedCollection}
+              onSelectFile={handleOpenFile}
+            />
+          </SidebarManager>
+
+          <SidebarInset>
+            <main className="flex-1 overflow-hidden flex flex-col lg:flex-row">
+              {error && (
+                <div className="px-4 pt-3">
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription className="flex justify-between items-center w-full">
+                      <span>{error}</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 ml-4 shrink-0"
+                        onClick={() => setError(null)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </AlertDescription>
+                  </Alert>
+                </div>
+              )}
+
+              <FileSystemAccessAlert />
+
+              <section className="flex-1 overflow-y-auto h-full pt-4 pb-6 px-4 md:px-6">
+                <div className="space-y-5">
+                  {(selectedCollection || selectedFile) && (
+                    <div className="flex flex-wrap items-center gap-3 px-4 py-2.5 bg-muted/40 rounded-lg border">
+                      {selectedCollection && (
+                        <div className="flex items-center gap-2">
+                          <Layers className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground">
+                            Collection
+                          </span>
+                          <Badge
+                            variant="secondary"
+                            className="font-mono text-xs font-medium"
+                          >
+                            {selectedCollection}
+                          </Badge>
+                        </div>
+                      )}
+                      {selectedCollection && selectedFile && (
+                        <Separator orientation="vertical" className="h-4" />
+                      )}
+                      {selectedFile ? (
+                        <div className="flex items-center gap-2">
+                          <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground">
+                            File
+                          </span>
+                          <Badge
+                            variant="secondary"
+                            className="font-mono text-xs font-medium"
+                          >
+                            {selectedFile.name}
+                          </Badge>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <FilePlusCornerIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                          <Badge
+                            variant="outline"
+                            className="font-mono text-xs"
+                          >
+                            New File
+                          </Badge>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="space-y-4">
+                    <MainEditorPanels body={body} setBody={setBody} />
+                  </div>
+                </div>
+              </section>
+            </main>
+          </SidebarInset>
+          {/* for frontmatter sidebar */}
+          <SidebarProvider
+            style={
+              {
+                "--sidebar-width": "100svh",
+                "--sidebar-width-mobile": "100vw",
+              } as React.CSSProperties
+            }
+          >
+            <SidebarManager name="right">
+              <FrontmatterSidebar
+                currentSchema={currentSchema}
+                frontmatter={frontmatter}
+                inferredFields={analysis.inferred}
+                unknownFields={analysis.unknown}
+                schemaFormKey={schemaFormKey}
+                onFieldChange={handleFrontmatterChange}
               />
             </SidebarManager>
-
-            <SidebarInset>
-              {/* for frontmatter sidebar */}
-              <SidebarProvider
-                style={
-                  {
-                    "--sidebar-width": "40rem",
-                    "--sidebar-width-mobile": "100vw",
-                  } as React.CSSProperties
-                }
-              >
-                <SidebarInset>
-                  <main className="flex-1 overflow-hidden flex flex-col lg:flex-row">
-                    {error && (
-                      <div className="px-4 pt-3">
-                        <Alert variant="destructive">
-                          <AlertCircle className="h-4 w-4" />
-                          <AlertTitle>Error</AlertTitle>
-                          <AlertDescription className="flex justify-between items-center w-full">
-                            <span>{error}</span>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6 ml-4 shrink-0"
-                              onClick={() => setError(null)}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </AlertDescription>
-                        </Alert>
-                      </div>
-                    )}
-
-                    <FileSystemAccessAlert />
-
-                    <section className="flex-1 overflow-y-auto h-full pt-4 pb-6 px-4 md:px-6">
-                      <div className="space-y-5">
-                        {(selectedCollection || selectedFile) && (
-                          <div className="flex flex-wrap items-center gap-3 px-4 py-2.5 bg-muted/40 rounded-lg border">
-                            {selectedCollection && (
-                              <div className="flex items-center gap-2">
-                                <Layers className="h-3.5 w-3.5 text-muted-foreground" />
-                                <span className="text-xs text-muted-foreground">
-                                  Collection
-                                </span>
-                                <Badge
-                                  variant="secondary"
-                                  className="font-mono text-xs font-medium"
-                                >
-                                  {selectedCollection}
-                                </Badge>
-                              </div>
-                            )}
-                            {selectedCollection && selectedFile && (
-                              <Separator
-                                orientation="vertical"
-                                className="h-4"
-                              />
-                            )}
-                            {selectedFile ? (
-                              <div className="flex items-center gap-2">
-                                <FileText className="h-3.5 w-3.5 text-muted-foreground" />
-                                <span className="text-xs text-muted-foreground">
-                                  File
-                                </span>
-                                <Badge
-                                  variant="secondary"
-                                  className="font-mono text-xs font-medium"
-                                >
-                                  {selectedFile.name}
-                                </Badge>
-                              </div>
-                            ) : (
-                              <div className="flex items-center gap-2">
-                                <FilePlusCornerIcon className="h-3.5 w-3.5 text-muted-foreground" />
-                                <Badge
-                                  variant="outline"
-                                  className="font-mono text-xs"
-                                >
-                                  New File
-                                </Badge>
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        <div className="space-y-4">
-                          <MainEditorPanels body={body} setBody={setBody} />
-                        </div>
-                      </div>
-                    </section>
-                  </main>
-                </SidebarInset>
-                <SidebarManager name="right">
-                  <FrontmatterSidebar
-                    currentSchema={currentSchema}
-                    frontmatter={frontmatter}
-                    inferredFields={analysis.inferred}
-                    unknownFields={analysis.unknown}
-                    schemaFormKey={schemaFormKey}
-                    onFieldChange={handleFrontmatterChange}
-                  />
-                </SidebarManager>
-              </SidebarProvider>
-            </SidebarInset>
-          </div>
+          </SidebarProvider>
         </SidebarProvider>
-
         <SiteFooter />
       </SidebarManagerProvider>
     </div>

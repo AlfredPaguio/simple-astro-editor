@@ -3,7 +3,6 @@ import { MarkdownEditor } from "@/components/MarkdownEditor";
 import { PreviewPane } from "@/components/PreviewPane";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
   TooltipContent,
@@ -19,7 +18,6 @@ import {
   Eye,
   PanelLeftClose,
   PanelRightClose,
-  RotateCcwIcon as ResetIcon,
   SquareCode,
 } from "lucide-react";
 import { GridLayout, horizontalCompactor } from "react-grid-layout";
@@ -43,9 +41,8 @@ export default function MainEditorPanels({ body, setBody }: Props) {
     containerRef,
     mounted,
     switchViewMode,
-    resetView,
-    movePanel,
-    resizePanel,
+    swapPanels,
+    expandPanel,
     onLayoutChange,
   } = useEditorLayout();
 
@@ -102,25 +99,6 @@ export default function MainEditorPanels({ body, setBody }: Props) {
           />
           <TooltipContent>Preview only</TooltipContent>
         </Tooltip>
-
-        <Separator orientation="vertical" className="h-4 mx-1" />
-
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={resetView}
-                className="text-xs gap-1.5 h-7"
-              >
-                <ResetIcon className="h-3.5 w-3.5" />
-                Reset
-              </Button>
-            }
-          />
-          <TooltipContent>Reset panels to default</TooltipContent>
-        </Tooltip>
       </div>
 
       <div ref={containerRef} className="w-full">
@@ -153,8 +131,8 @@ export default function MainEditorPanels({ body, setBody }: Props) {
                     </CardTitle>
 
                     <PanelControls
-                      onMove={(dir) => movePanel("editor", dir)}
-                      onResize={(dir) => resizePanel("editor", dir)}
+                      onExpand={(dir) => expandPanel("editor", dir)}
+                      onSwap={swapPanels}
                     />
 
                     <Tooltip>
@@ -197,8 +175,8 @@ export default function MainEditorPanels({ body, setBody }: Props) {
                     </CardTitle>
 
                     <PanelControls
-                      onMove={(dir) => movePanel("preview", dir)}
-                      onResize={(dir) => resizePanel("preview", dir)}
+                      onExpand={(dir) => expandPanel("preview", dir)}
+                      onSwap={swapPanels}
                     />
 
                     <Tooltip>

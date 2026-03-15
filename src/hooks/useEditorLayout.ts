@@ -1,8 +1,8 @@
 import { useState } from "react";
 import {
-    horizontalCompactor,
-    useContainerWidth,
-    useResponsiveLayout,
+  horizontalCompactor,
+  useContainerWidth,
+  useResponsiveLayout,
 } from "react-grid-layout";
 
 export type ViewMode = "both" | "editor" | "preview";
@@ -126,47 +126,88 @@ export function useEditorLayout() {
     saveToLS(newLayouts);
   };
 
-  const resetView = () => {
-    setViewMode("both");
-    const newLayouts = buildDefaultLayouts(true, true);
-    setLayouts(newLayouts);
-    saveToLS(newLayouts);
+  // Swap the x positions (and widths) of editor and preview at the current breakpoint.
+  // If only one panel is visible, this is a no-op.
+  const swapPanels = () => {
+    const colCount = cols;
+    const editor = layout.find((i) => i.i === "editor");
+    const preview = layout.find((i) => i.i === "preview");
+    if (!editor || !preview) return;
+
+    const updated = {
+      ...layouts,
+      [breakpoint]: layout.map((item) => {
+        if (item.i === "editor")
+          return { ...item, x: preview.x, w: preview.w, y: preview.y };
+        if (item.i === "preview")
+          return { ...item, x: editor.x, w: editor.w, y: editor.y };
+        return item;
+      }),
+    };
+    // Clamp x so neither panel overflows after swap
+    const clamped = {
+      ...updated,
+      [breakpoint]: (updated[breakpoint] as LayoutItem[]).map((item) => ({
+        ...item,
+        x: Math.min(item.x, colCount - item.w),
+      })),
+    };
+    setLayouts(clamped);
+    saveToLS(clamped);
   };
 
-  const movePanel = (
-    panelKey: string,
-    direction: "left" | "right" | "up" | "down",
-  ) => {
-    applyLayoutPatch((item, colCount) => {
-      switch (direction) {
-        case "left":
-          return { x: Math.max(0, item.x - 1) };
-        case "right":
-          return { x: Math.min(colCount - item.w, item.x + 1) };
-        case "up":
-          return { y: Math.max(0, item.y - 1) };
-        case "down":
-          return { y: item.y + 1 };
-      }
-    }, panelKey);
-  };
+  // Expand a panel to fill all columns to its left or right,
+  // shrinking the other panel to take the leftover space.
+  const expandPanel = (panelKey: string, direction: "left" | "right") => {
+    const colCount = cols;
+    const thisPanel = layout.find((i) => i.i === panelKey) as
+      | LayoutItem
+      | undefined;
+    const otherKey = panelKey === "editor" ? "preview" : "editor";
+    const otherPanel = layout.find((i) => i.i === otherKey) as
+      | LayoutItem
+      | undefined;
 
-  const resizePanel = (
-    panelKey: string,
-    direction: "left" | "right" | "up" | "down",
-  ) => {
-    applyLayoutPatch((item, colCount) => {
-      switch (direction) {
-        case "right":
-          return { w: Math.min(colCount - item.x, item.w + PANEL_W_STEP) };
-        case "left":
-          return { w: Math.max(2, item.w - PANEL_W_STEP) };
-        case "down":
-          return { h: Math.min(PANEL_H_MAX, item.h + PANEL_H_STEP) };
-        case "up":
-          return { h: Math.max(PANEL_H_MIN, item.h - PANEL_H_STEP) };
-      }
-    }, panelKey);
+    if (!thisPanel) return;
+
+    // Solo panel — nothing to expand against
+    if (!otherPanel) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      applyLayoutPatch((_item) => ({ x: 0, w: colCount }), panelKey);
+      return;
+    }
+
+    const MIN_W = 0;
+
+    let newThisX: number;
+    let newThisW: number;
+    // let newOtherX: number;
+    // let newOtherW: number;
+
+    if (direction === "right") {
+      // Grow this panel rightward: push other panel to the right edge
+      newThisX = thisPanel.x;
+      newThisW = Math.min(colCount - thisPanel.x, colCount - MIN_W);
+      // newOtherW = Math.max(MIN_W, colCount - newThisW - newThisX);
+      // newOtherX = newThisX + newThisW;
+    } else {
+      // Grow this panel leftward: push other panel to the left edge
+      newThisW = Math.min(colCount - otherPanel.x, colCount - MIN_W);
+      newThisX = colCount - newThisW;
+      // newOtherX = 0;
+      // newOtherW = Math.max(MIN_W, newThisX);
+    }
+
+    const updated = {
+      ...layouts,
+      [breakpoint]: layout.map((item) => {
+        if (item.i === panelKey) return { ...item, x: newThisX, w: newThisW };
+        // if (item.i === otherKey) return { ...item, x: newOtherX, w: newOtherW };
+        return item;
+      }),
+    };
+    setLayouts(updated);
+    saveToLS(updated);
   };
 
   const onLayoutChange = (newLayout: LayoutItem[]) => {
@@ -194,9 +235,8 @@ export function useEditorLayout() {
     containerRef,
     mounted,
     switchViewMode,
-    resetView,
-    movePanel,
-    resizePanel,
+    swapPanels,
+    expandPanel,
     onLayoutChange,
   };
 }

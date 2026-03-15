@@ -4,6 +4,7 @@ import {
   useSidebarManager,
 } from "@/components/sidebar-manager";
 import { Button } from "@/components/ui/button";
+import { Kbd } from "@/components/ui/kbd";
 import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
@@ -11,6 +12,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { FileEntry } from "@/lib/fs-access";
+import { formatForDisplay, useHotkey } from "@tanstack/react-hotkeys";
 import {
   DownloadIcon,
   FileCode2,
@@ -38,14 +40,32 @@ export default function SiteHeader({
   selectedFile,
   loading = false,
 }: Props) {
+  // hotkey="Mod+Alt+B" on Mac, "Ctrl+Alt+B" on Windows/Linux
+  const manager = useSidebarManager();
+  useHotkey("Mod+B", () => manager.use("left")?.toggleSidebar());
+  useHotkey("Alt+B", () => manager.use("right")?.toggleSidebar());
+
   return (
     <header className="sticky top-0 z-40 border-b bg-background/95 supports-backdrop-filter:backdrop-blur supports-backdrop-filter:bg-background/60 px-4">
       <div className="flex h-(--header-height) items-center gap-2">
         {/* <SidebarTrigger className="-ml-1" /> */}
-        <SidebarManagerTrigger name="left">
-          <PanelLeftIcon />
-          <span className="sr-only">Toggle File and Collection Sidebar</span>
-        </SidebarManagerTrigger>
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <SidebarManagerTrigger name="left">
+                <PanelLeftIcon />
+                <span className="sr-only">
+                  Toggle File and Collection Sidebar
+                </span>
+              </SidebarManagerTrigger>
+            }
+          />
+          {/* @see https://tanstack.com/hotkeys/latest/docs/framework/react/guides/formatting-display#platform-symbols-reference */}
+          <TooltipContent>
+            File and Collections{""}
+            <Kbd>{formatForDisplay("Ctrl+B")}</Kbd>
+          </TooltipContent>
+        </Tooltip>
 
         <Separator orientation="vertical" />
 
@@ -130,10 +150,20 @@ export default function SiteHeader({
           <ModeToggle />
         </div>
 
-        <SidebarManagerTrigger name="right">
-          <PanelRightIcon />
-          <span className="sr-only">Toggle Frontmatter Sidebar</span>
-        </SidebarManagerTrigger>
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <SidebarManagerTrigger name="right">
+                <PanelRightIcon />
+                <span className="sr-only">Toggle Frontmatter Sidebar</span>
+              </SidebarManagerTrigger>
+            }
+          />
+          <TooltipContent>
+            Frontmatter{""}
+            <Kbd>{formatForDisplay("Alt+B")}</Kbd>
+          </TooltipContent>
+        </Tooltip>
       </div>
     </header>
   );

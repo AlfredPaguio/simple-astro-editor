@@ -6,6 +6,7 @@ import {
   SidebarManager,
   SidebarManagerProvider,
 } from "@/components/sidebar-manager";
+import SiteFooter from "@/components/site-footer";
 import SiteHeader from "@/components/site-header";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -277,6 +278,8 @@ export default function MainEditor() {
             </SidebarInset>
           </div>
         </SidebarProvider>
+
+        <SiteFooter />
       </SidebarManagerProvider>
     </div>
   );

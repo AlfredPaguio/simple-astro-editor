@@ -5,6 +5,7 @@ import { defineConfig } from "vite";
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: "/simple-astro-editor/",
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
@@ -35,8 +36,8 @@ export default defineConfig({
       output: {
         manualChunks: {
           editor: ["@uiw/react-codemirror", "@codemirror/lang-markdown"],
-          preview: ["remark", "remark-html", "rehype-sanitize"],
-          schema: ["zod/v4", "esbuild-wasm"],
+          preview: ["marked", "dompurify"],
+          schema: ["zod/v4", "esbuild-wasm", "gray-matter"],
         },
       },
     },

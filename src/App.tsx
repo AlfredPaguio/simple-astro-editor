@@ -1,8 +1,8 @@
 import { TestConfigEditor } from "@/Tester";
 import MainEditor from "@/MainEditor";
 import {
-  // BrowserRouter,
-  HashRouter,
+  BrowserRouter,
+  // HashRouter,
   Routes,
   Route,
 } from "react-router";
@@ -11,12 +11,12 @@ import Providers from "@/components/Providers";
 export function App() {
   return (
     <Providers>
-      <HashRouter>
+      <BrowserRouter>
         <Routes>
           <Route path="/" element={<MainEditor />} />
           <Route path="/tester" element={<TestConfigEditor />} />
         </Routes>
-      </HashRouter>
+      </BrowserRouter>
     </Providers>
   );
 }

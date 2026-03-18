@@ -1,7 +1,6 @@
 {
   "name": "simple-astro-editor",
   "private": true,
-  "homepage": "https://github.com/AlfredPaguio/simple-astro-editor",
   "version": "0.0.0",
   "type": "module",
   "scripts": {

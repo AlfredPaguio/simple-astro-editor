@@ -6,7 +6,7 @@
   "scripts": {
     "postinstall": "cp node_modules/esbuild-wasm/esbuild.wasm public/",
     "dev": "vite",
-    "build": "tsc -b --noEmitOnError false && vite build",
+    "build": "tsc -b --force && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },

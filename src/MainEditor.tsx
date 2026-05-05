@@ -16,6 +16,9 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { buildFileTree, sortTree } from "@/lib/file-tree-utils";
 import { compileMarkdown, parseMarkdown } from "@/lib/frontmatter";
 import {
+  canWriteToHandle,
+  detectAccessMode,
+  isDirectWriteSupported,
   listMarkdownFiles,
   pickDirectory,
   pickFile,
@@ -47,10 +50,20 @@ export default function MainEditor() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const schemaFormKey = useId();
+  const [writeSupported, setWriteSupported] = useState(true);
+  const [accessMode, setAccessMode] = useState<
+    "modern" | "legacy" | "fallback"
+  >(detectAccessMode());
+
+  useState(() => {
+    setWriteSupported(isDirectWriteSupported());
+  });
 
   const handleLoadConfig = async () => {
     setLoading(true);
     setError(null);
+    setAccessMode(detectAccessMode());
+    setWriteSupported(isDirectWriteSupported());
     try {
       const file = await pickFile([
         {
@@ -77,6 +90,8 @@ export default function MainEditor() {
   const handleLoadContentFolder = async () => {
     setLoading(true);
     setError(null);
+    setAccessMode(detectAccessMode());
+    setWriteSupported(isDirectWriteSupported());
     try {
       const dir = await pickDirectory();
       if (!dir) return;
@@ -93,7 +108,12 @@ export default function MainEditor() {
   const handleOpenFile = async (file: FileEntry) => {
     setLoading(true);
     try {
-      const text = await readFile(file.handle);
+      // const text = await readFile(file.handle);
+      const text =
+        file.cachedContent !== undefined
+          ? file.cachedContent
+          : await readFile(file.handle);
+
       const parsed = parseMarkdown(text);
       setFrontmatter(parsed.frontmatter);
       setBody(parsed.body);
@@ -110,7 +130,19 @@ export default function MainEditor() {
     setLoading(true);
     try {
       const newContent = compileMarkdown(frontmatter, body);
-      await writeFile(selectedFile.handle, newContent);
+      if (canWriteToHandle(selectedFile.handle)) {
+        await writeFile(selectedFile.handle, newContent);
+      } else {
+        const blob = new Blob([newContent], { type: "text/markdown" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = selectedFile.name;
+        document.body.appendChild(a);
+        a.click();
+        URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save file");
     } finally {
@@ -245,6 +277,23 @@ export default function MainEditor() {
                           </Badge>
                         </div>
                       )}
+
+                      <Separator orientation="vertical" className="h-4" />
+
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">
+                          Mode
+                        </span>
+                        <Badge
+                          variant={writeSupported ? "secondary" : "outline"}
+                          className="font-mono text-xs"
+                        >
+                          {accessMode === "modern" && "Direct FS Access"}
+                          {accessMode === "legacy" && "Legacy FS Access"}
+                          {accessMode === "fallback" &&
+                            "Import / Download Mode"}
+                        </Badge>
+                      </div>
                     </div>
                   )}
 
